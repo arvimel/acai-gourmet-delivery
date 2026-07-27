@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Admin - Açaí Gourmet</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 font-sans flex h-screen overflow-hidden">
+
+    <!-- Barra Lateral -->
+    <div class="w-64 bg-slate-900 text-white flex flex-col justify-between">
+        <div class="p-5">
+            <h2 class="text-xl font-bold tracking-wider text-amber-500 flex items-center gap-2">
+                <i class="fa-solid fa-burger"></i> Admin Pro
+            </h2>
+            <nav class="mt-10 space-y-2">
+                <a href="#" class="flex items-center gap-3 px-4 py-3 bg-slate-800 rounded-lg text-white">
+                    <i class="fa-solid fa-utensils w-5"></i> Cardápio / Produtos
+                </a>
+            </nav>
+        </div>
+        <div class="p-5 border-t border-slate-800 text-xs text-gray-500">
+            v1.0.0 - Açaí Gourmet
+        </div>
+    </div>
+
+    <!-- Conteúdo Principal -->
+    <div class="flex-1 flex flex-col overflow-y-auto">
+        <!-- Cabeçalho -->
+        <header class="bg-white shadow px-8 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-semibold text-gray-800">Gestão do Cardápio</h1>
+            <button onclick="abrirModal()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-medium shadow flex items-center gap-2 transition cursor-pointer">
+                <i class="fa-solid fa-plus"></i> Novo Item
+            </button>
+        </header>
+
+        <!-- Área de Dados -->
+        <main class="p-8 max-w-7xl w-full mx-auto">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 border-b border-gray-200 text-gray-600 text-sm font-semibold uppercase">
+                            <th class="p-4">Foto</th>
+                            <th class="p-4">Item</th>
+                            <th class="p-4">Categoria</th>
+                            <th class="p-4">Preço</th>
+                            <th class="p-4">Status</th>
+                            <th class="p-4 text-right">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-produtos" class="divide-y divide-gray-100 text-gray-700 text-sm">
+                        <!-- Gerado por JS -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Formulário (Adicionar/Editar) -->
+    <div id="modalProduto" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-lg max-w-md w-full overflow-hidden">
+            <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
+                <h3 id="modalTitulo" class="font-bold">Novo Produto</h3>
+                <button onclick="fecharModal()" class="text-gray-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="formProduto" onsubmit="salvarProduto(event)" class="p-6 space-y-4">
+                <input type="hidden" id="prodId">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Nome do Produto</label>
+                    <input type="text" id="prodNome" required class="w-full border border-gray-300 rounded-lg p-2 focus:outline-amber-500 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Descrição / Ingredientes</label>
+                    <textarea id="prodDescricao" rows="2" class="w-full border border-gray-300 rounded-lg p-2 focus:outline-amber-500 text-sm"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Preço (R$)</label>
+                        <input type="number" step="0.01" id="prodPreco" required class="w-full border border-gray-300 rounded-lg p-2 focus:outline-amber-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Categoria</label>
+                        <select id="prodCategoria" class="w-full border border-gray-300 rounded-lg p-2 focus:outline-amber-500 text-sm">
+                            <option value="Hambúrgueres">Hambúrgueres</option>
+                            <option value="Pizzas">Pizzas</option>
+                            <option value="Açaí">Açaí</option>
+                            <option value="Bebidas">Bebidas</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">URL da Foto do Item</label>
+                    <input type="url" id="prodFoto" placeholder="https://linkdafoto.com/imagem.jpg" class="w-full border border-gray-300 rounded-lg p-2 focus:outline-amber-500 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Status nas Vendas</label>
+                    <select id="prodStatus" class="w-full border border-gray-300 rounded-lg p-2 focus:outline-amber-500 text-sm">
+                        <option value="Disponível">Disponível</option>
+                        <option value="Indisponível">Indisponível</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="fecharModal()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm cursor-pointer hover:bg-gray-50">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-medium shadow cursor-pointer">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ATENÇÃO: Cole a URL copiada do seu Apps Script entre as aspas abaixo:
+        const API_URL = "https://script.google.com/macros/s/AKfycbwscI-V0klLDuxlrlSemnW03TJTTUVcT8--B0oX7rhVzRfnWgrbLiVCjnP1X4SO81pS/exec"; 
+        const TOKEN = "acai_gourmet_pro_2026"; 
+
+        async function carregarProdutos() {
+            try {
+                const response = await fetch(`${API_URL}?sheet=Produtos`);
+                const produtos = await response.json();
+                const tabela = document.getElementById("tabela-produtos");
+                tabela.innerHTML = "";
+
+                produtos.forEach(prod => {
+                    tabela.innerHTML += `
+                        <tr class="hover:bg-gray-50 border-b border-gray-100 transition">
+                            <td class="p-4"><img src="${prod.foto || 'https://placehold.co/50x50?text=Sem+Foto'}" class="w-12 h-12 object-cover rounded-lg border border-gray-200"></td>
+                            <td class="p-4"><div class="font-medium text-gray-900">${prod.nome}</div><div class="text-xs text-gray-400 max-w-xs truncate">${prod.descricao || ''}</div></td>
+                            <td class="p-4"><span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs font-semibold">${prod.categoria}</span></td>
+                            <td class="p-4 font-semibold text-gray-900">R$ ${parseFloat(prod.preco).toFixed(2)}</td>
+                            <td class="p-4"><span class="px-2 py-0.5 rounded-full text-xs font-medium ${prod.status === 'Disponível' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}">${prod.status}</span></td>
+                            <td class="p-4 text-right space-x-3">
+                                <button onclick='abrirModalEditar(${JSON.stringify(prod)})' class="text-blue-600 hover:text-blue-900 font-medium cursor-pointer"><i class="fa-solid fa-pen"></i></button>
+                                <button onclick="deletarProduto('${prod.id}')" class="text-red-600 hover:text-red-900 cursor-pointer"><i class="fa-solid fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (e) { console.error("Erro ao carregar cardápio:", e); }
+        }
+
+        function abrirModal() {
+            document.getElementById("formProduto").reset();
+            document.getElementById("prodId").value = "ID_" + Date.now();
+            document.getElementById("modalTitulo").innerText = "Novo Produto";
+            document.getElementById("modalProduto").classList.remove("hidden");
+        }
+
+        function abrirModalEditar(prod) {
+            document.getElementById("modalTitulo").innerText = "Editar Produto";
+            document.getElementById("prodId").value = prod.id;
+            document.getElementById("prodNome").value = prod.nome;
+            document.getElementById("prodDescricao").value = prod.descricao;
+            document.getElementById("prodPreco").value = prod.preco;
+            document.getElementById("prodCategoria").value = prod.categoria;
+            document.getElementById("prodFoto").value = prod.foto;
+            document.getElementById("prodStatus").value = prod.status;
+            document.getElementById("modalProduto").classList.remove("hidden");
+        }
+
+        function fecharModal() { document.getElementById("modalProduto").classList.add("hidden"); }
+
+        async function salvarProduto(e) {
+            e.preventDefault();
+            const idExistente = document.getElementById("modalTitulo").innerText === "Editar Produto";
+            const payload = {
+                token: TOKEN,
+                sheet: "Produtos",
+                action: idExistente ? "edit" : "add",
+                id: document.getElementById("prodId").value,
+                nome: document.getElementById("prodNome").value,
+                descricao: document.getElementById("prodDescricao").value,
+                preco: document.getElementById("prodPreco").value,
+                categoria: document.getElementById("prodCategoria").value,
+                foto: document.getElementById("prodFoto").value,
+                status: document.getElementById("prodStatus").value
+            };
+
+            await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
+            fecharModal();
+            carregarProdutos();
+        }
+
+        async function deletarProduto(id) {
+            if (!confirm("Tem certeza que deseja excluir esse item?")) return;
+            await fetch(API_URL, { method: "POST", body: JSON.stringify({ token: TOKEN, sheet: "Produtos", action: "delete", id: id }) });
+            carregarProdutos();
+        }
+
+        window.onload = carregarProdutos;
+    </script>
+</body>
+</html>
