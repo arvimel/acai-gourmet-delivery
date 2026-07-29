@@ -57,10 +57,10 @@
                 <div id="badgeStatus" class="inline-block bg-green-500/20 text-green-400 text-xs font-semibold px-3 py-1 rounded-full border border-green-500/30">
                     <i class="fa-solid fa-circle text-[9px] mr-1 animate-pulse"></i> Aberto para Pedidos
                 </div>
-                <div id="badgeHorario" class="hidden inline-block bg-white/10 text-gray-200 text-xs font-medium px-3 py-1 rounded-full border border-white/10">
+                <div id="badgeHorario" style="display:none;" class="bg-white/10 text-gray-200 text-xs font-medium px-3 py-1 rounded-full border border-white/10">
                     <i class="fa-regular fa-clock mr-1"></i><span id="txtHorario"></span>
                 </div>
-                <div id="badgeDias" class="hidden inline-block bg-white/10 text-gray-200 text-xs font-medium px-3 py-1 rounded-full border border-white/10">
+                <div id="badgeDias" style="display:none;" class="bg-white/10 text-gray-200 text-xs font-medium px-3 py-1 rounded-full border border-white/10">
                     <i class="fa-regular fa-calendar mr-1"></i><span id="txtDias"></span>
                 </div>
             </div>
@@ -207,12 +207,12 @@
 
             if (config.exibir_horario !== "false" && (config.horario_abertura || config.horario_fechamento)) {
                 document.getElementById("txtHorario").innerText = `${config.horario_abertura || "--:--"} às ${config.horario_fechamento || "--:--"}`;
-                document.getElementById("badgeHorario").classList.remove("hidden");
+                document.getElementById("badgeHorario").style.display = "inline-block";
             }
 
             if (config.exibir_dias !== "false" && config.dias_funcionamento) {
                 document.getElementById("txtDias").innerText = config.dias_funcionamento;
-                document.getElementById("badgeDias").classList.remove("hidden");
+                document.getElementById("badgeDias").style.display = "inline-block";
             }
 
             // Cores do tema
@@ -237,12 +237,25 @@
         async function carregarConfig() {
             try {
                 const resp = await fetch(`${API_URL}?sheet=Config&_t=${Date.now()}`);
-                if (!resp.ok) return;
+                if (!resp.ok) {
+                    console.warn("Config: servidor respondeu com status", resp.status);
+                    return;
+                }
                 const linhas = await resp.json();
-                if (!Array.isArray(linhas)) return;
+                console.log("Config recebida do Apps Script:", linhas);
+
+                if (!Array.isArray(linhas)) {
+                    console.warn("Config: resposta não é uma lista (provavelmente a aba 'Config' ainda não existe, ou o Apps Script publicado está desatualizado). Resposta:", linhas);
+                    return;
+                }
+                if (linhas.length === 0) {
+                    console.warn("Config: a aba 'Config' existe mas está vazia. Salve as configurações no painel admin.");
+                    return;
+                }
 
                 const config = {};
                 linhas.forEach(l => { config[l.chave] = l.valor; });
+                console.log("Config aplicada:", config);
                 aplicarConfig(config);
             } catch (e) {
                 console.warn("Não foi possível carregar configurações personalizadas, usando padrão.", e);
