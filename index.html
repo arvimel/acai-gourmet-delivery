@@ -111,7 +111,8 @@
 
         async function carregarCardapio() {
             try {
-                const response = await fetch(`${API_URL}?sheet=Produtos`);
+                // CORREÇÃO 1: Adicionado '&_t=' + Date.now() para quebrar o cache agressivo do Google Apps Script
+                const response = await fetch(`${API_URL}?sheet=Produtos&_t=${Date.now()}`);
                 produtosGlobais = await response.json();
                 
                 const container = document.getElementById("cardapio-container");
@@ -133,9 +134,13 @@
                     
                     const itensCat = disponiveis.filter(p => p.categoria === cat);
                     itensCat.forEach(p => {
+                        
+                        // CORREÇÃO 2: Limpeza estrita da URL da foto para evitar espaços em branco ou campos nulos que quebram a imagem
+                        const fotoValida = (p.foto && String(p.foto).trim() !== "") ? String(p.foto).trim() : 'https://placehold.co/80x80?text=Sem+Foto';
+
                         htmlCat += `
                             <div class="bg-white p-3 rounded-xl shadow-xs border border-gray-100 flex gap-3 items-center">
-                                <img src="${p.foto || 'https://placehold.co/80x80?text=Sem+Foto'}" class="w-20 h-20 object-cover rounded-lg border border-gray-100 flex-shrink-0">
+                                <img src="${fotoValida}" class="w-20 h-20 object-cover rounded-lg border border-gray-100 flex-shrink-0" onerror="this.src='https://placehold.co/80x80?text=Sem+Foto'">
                                 <div class="flex-1 min-w-0">
                                     <h3 class="font-bold text-gray-900 text-sm truncate">${p.nome}</h3>
                                     <p class="text-xs text-gray-400 line-clamp-2 mt-0.5">${p.descricao || ''}</p>
