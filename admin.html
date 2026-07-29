@@ -22,7 +22,7 @@
             </nav>
         </div>
         <div class="p-5 border-t border-slate-800 text-xs text-gray-500">
-            v1.0.0 - Açaí Gourmet
+            v1.0.1 - Açaí Gourmet
         </div>
     </div>
 
@@ -38,6 +38,7 @@
 
         <!-- Área de Dados -->
         <main class="p-8 max-w-7xl w-full mx-auto">
+            <div id="msgErro" class="hidden bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-4"></div>
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <table class="w-full text-left border-collapse">
                     <thead>
@@ -110,21 +111,49 @@
     </div>
 
     <script>
-        // ATENÇÃO: Cole a URL copiada do seu Apps Script entre as aspas abaixo:
-        const API_URL = "https://script.google.com/macros/s/AKfycbwscI-V0klLDuxlrlSemnW03TJTTUVcT8--B0oX7rhVzRfnWgrbLiVCjnP1X4SO81pS/exec"; 
-        const TOKEN = "acai_gourmet_pro_2026"; 
+        // ATENÇÃO: essa URL precisa ser SEMPRE a mesma usada no index.html (cardápio do cliente).
+        // Toda vez que você fizer "Nova versão" no Apps Script, atualize aqui e lá também.
+        const API_URL = "https://script.google.com/macros/s/AKfycbzqHAYKlqS-ao0LnLpAP1YoIGqPN27Q4fuCGet9n4WV_xqL-yZFsvAWzNTy16REt1w3/exec";
+        const TOKEN = "acai_gourmet_pro_2026";
+
+        function mostrarErro(msg) {
+            const box = document.getElementById("msgErro");
+            box.innerText = msg;
+            box.classList.remove("hidden");
+        }
+
+        function esconderErro() {
+            document.getElementById("msgErro").classList.add("hidden");
+        }
 
         async function carregarProdutos() {
             try {
-                const response = await fetch(`${API_URL}?sheet=Produtos`);
+                const response = await fetch(`${API_URL}?sheet=Produtos&_t=${Date.now()}`);
+
+                if (!response.ok) {
+                    throw new Error(`Servidor respondeu com status ${response.status}`);
+                }
+
                 const produtos = await response.json();
+
+                if (produtos.error) {
+                    throw new Error(produtos.error);
+                }
+
+                esconderErro();
+
                 const tabela = document.getElementById("tabela-produtos");
                 tabela.innerHTML = "";
+
+                if (produtos.length === 0) {
+                    tabela.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-400">Nenhum produto cadastrado ainda.</td></tr>`;
+                    return;
+                }
 
                 produtos.forEach(prod => {
                     tabela.innerHTML += `
                         <tr class="hover:bg-gray-50 border-b border-gray-100 transition">
-                            <td class="p-4"><img src="${prod.foto || 'https://placehold.co/50x50?text=Sem+Foto'}" class="w-12 h-12 object-cover rounded-lg border border-gray-200"></td>
+                            <td class="p-4"><img src="${prod.foto || 'https://placehold.co/50x50?text=Sem+Foto'}" class="w-12 h-12 object-cover rounded-lg border border-gray-200" onerror="this.onerror=null;this.src='https://placehold.co/50x50?text=Sem+Foto'"></td>
                             <td class="p-4"><div class="font-medium text-gray-900">${prod.nome}</div><div class="text-xs text-gray-400 max-w-xs truncate">${prod.descricao || ''}</div></td>
                             <td class="p-4"><span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs font-semibold">${prod.categoria}</span></td>
                             <td class="p-4 font-semibold text-gray-900">R$ ${parseFloat(prod.preco).toFixed(2)}</td>
@@ -136,7 +165,10 @@
                         </tr>
                     `;
                 });
-            } catch (e) { console.error("Erro ao carregar cardápio:", e); }
+            } catch (e) {
+                console.error("Erro ao carregar cardápio:", e);
+                mostrarErro("Não foi possível carregar os produtos. Verifique a URL da API no código do painel. Detalhe: " + e.message);
+            }
         }
 
         function abrirModal() {
@@ -176,15 +208,59 @@
                 status: document.getElementById("prodStatus").value
             };
 
-            await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
-            fecharModal();
-            carregarProdutos();
+            try {
+                const resposta = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain" },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!resposta.ok) {
+                    throw new Error(`Servidor respondeu com status ${resposta.status}`);
+                }
+
+                const resultado = await resposta.json();
+
+                if (resultado.status === "unauthorized") {
+                    alert("Token inválido. Verifique se o TOKEN no admin.html é igual ao do Apps Script.");
+                    return;
+                }
+
+                if (resultado.status !== "success") {
+                    alert("O servidor recusou a operação: " + (resultado.message || JSON.stringify(resultado)));
+                    return;
+                }
+
+                fecharModal();
+                carregarProdutos();
+            } catch (error) {
+                console.error("Erro ao salvar produto:", error);
+                alert("Falha ao salvar o produto. Verifique a URL da API e a conexão. Detalhe: " + error.message);
+            }
         }
 
         async function deletarProduto(id) {
             if (!confirm("Tem certeza que deseja excluir esse item?")) return;
-            await fetch(API_URL, { method: "POST", body: JSON.stringify({ token: TOKEN, sheet: "Produtos", action: "delete", id: id }) });
-            carregarProdutos();
+
+            try {
+                const resposta = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain" },
+                    body: JSON.stringify({ token: TOKEN, sheet: "Produtos", action: "delete", id: id })
+                });
+
+                const resultado = await resposta.json();
+
+                if (resultado.status !== "success") {
+                    alert("Não foi possível excluir: " + (resultado.message || resultado.status));
+                    return;
+                }
+
+                carregarProdutos();
+            } catch (error) {
+                console.error("Erro ao excluir produto:", error);
+                alert("Falha ao excluir o produto. Detalhe: " + error.message);
+            }
         }
 
         window.onload = carregarProdutos;
