@@ -3,40 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Açaí Gourmet - Cardápio Digital</title>
+    <title>Cardápio Digital</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link id="fonteGoogle" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap">
+    <style>
+        :root {
+            --cor-primaria: #0f172a;
+            --cor-botao: #f59e0b;
+            --cor-botao-hover: #d97706;
+            --cor-destaque: #f59e0b;
+            --fonte: 'Poppins', sans-serif;
+            --tamanho-fonte: 16px;
+        }
+        html, body { font-family: var(--fonte); font-size: var(--tamanho-fonte); }
+        .cor-primaria-bg { background-color: var(--cor-primaria); }
+        .cor-botao-bg { background-color: var(--cor-botao); }
+        .cor-botao-bg:hover { background-color: var(--cor-botao-hover); }
+        .cor-botao-text { color: var(--cor-botao); }
+        .cor-botao-border { border-color: var(--cor-botao); }
+        .cor-destaque-text { color: var(--cor-destaque); }
+        .cor-destaque-bg { background-color: var(--cor-destaque); }
+        .cor-primaria-text { color: var(--cor-primaria); }
+        .cor-botao-ring:focus { outline-color: var(--cor-botao); }
+        .card-produto { transition: transform .15s ease, box-shadow .15s ease; }
+        .card-produto:active { transform: scale(0.98); }
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .fade-in { animation: fadeIn .25s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        #btnCarrinho.pulso { animation: pulso .5s ease; }
+        @keyframes pulso { 0% { transform: scale(1); } 40% { transform: scale(1.18); } 100% { transform: scale(1); } }
+    </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans pb-24">
+<body class="bg-gray-50 text-gray-800 pb-28">
 
     <!-- Cabeçalho da Loja -->
-    <header class="bg-slate-900 text-white text-center py-8 px-4 shadow-md">
-        <h1 class="text-3xl font-extrabold text-amber-500 tracking-wide">Açaí Gourmet</h1>
-        <p class="text-gray-400 text-sm mt-1">Pizzaria e Hamburgueria</p>
-        <div class="inline-block bg-green-500/20 text-green-400 text-xs font-semibold px-3 py-1 rounded-full mt-3 border border-green-500/30">
-            <i class="fa-solid fa-circle text-[9px] mr-1 animate-pulse"></i> Aberto para Pedidos
+    <header class="cor-primaria-bg text-white relative overflow-hidden">
+        <!-- Botão de Carrinho (fixo, sempre visível) -->
+        <button id="btnCarrinho" onclick="irParaCarrinho()" class="absolute top-4 right-4 z-20 bg-white/10 hover:bg-white/20 backdrop-blur border border-white/20 w-11 h-11 rounded-full flex items-center justify-center cursor-pointer transition">
+            <i class="fa-solid fa-cart-shopping text-lg"></i>
+            <span id="badgeCarrinho" class="hidden absolute -top-1.5 -right-1.5 cor-destaque-bg text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-slate-900">0</span>
+        </button>
+
+        <!-- Banner de destaque (opcional) -->
+        <div id="bannerDestaque" class="hidden w-full h-32 sm:h-44 bg-cover bg-center opacity-30 absolute inset-0"></div>
+
+        <div class="relative text-center py-8 px-4">
+            <img id="logoLoja" src="" alt="Logo" class="hidden w-16 h-16 rounded-full object-cover mx-auto mb-3 border-2 border-white/30 shadow-lg">
+            <h1 id="nomeLoja" class="text-3xl font-extrabold text-amber-500 cor-destaque-text tracking-wide">Cardápio Digital</h1>
+            <p id="sloganLoja" class="text-gray-300 text-sm mt-1"></p>
+
+            <div class="flex flex-wrap justify-center gap-2 mt-3">
+                <div id="badgeStatus" class="inline-block bg-green-500/20 text-green-400 text-xs font-semibold px-3 py-1 rounded-full border border-green-500/30">
+                    <i class="fa-solid fa-circle text-[9px] mr-1 animate-pulse"></i> Aberto para Pedidos
+                </div>
+                <div id="badgeHorario" class="hidden inline-block bg-white/10 text-gray-200 text-xs font-medium px-3 py-1 rounded-full border border-white/10">
+                    <i class="fa-regular fa-clock mr-1"></i><span id="txtHorario"></span>
+                </div>
+                <div id="badgeDias" class="hidden inline-block bg-white/10 text-gray-200 text-xs font-medium px-3 py-1 rounded-full border border-white/10">
+                    <i class="fa-regular fa-calendar mr-1"></i><span id="txtDias"></span>
+                </div>
+            </div>
         </div>
     </header>
 
     <!-- Conteúdo Principal -->
     <main class="max-w-md mx-auto p-4 space-y-6">
-
-        <!-- Vitrine de Produtos -->
         <div id="cardapio-container" class="space-y-6">
-            <!-- As categorias e itens serão injetados aqui via JS -->
             <p class="text-center text-gray-400 py-8 animate-pulse">Carregando cardápio gostoso...</p>
         </div>
-
     </main>
 
+    <!-- Modal de Detalhes do Produto (descrição completa) -->
+    <div id="modalDetalhe" class="fixed inset-0 bg-black/60 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 z-50">
+        <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col fade-in">
+            <div class="relative">
+                <img id="detalheFoto" src="" class="w-full h-56 object-cover">
+                <button onclick="fecharDetalhe()" class="absolute top-3 right-3 bg-black/50 hover:bg-black/70 text-white w-9 h-9 rounded-full flex items-center justify-center cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-5 overflow-y-auto flex-1">
+                <span id="detalheCategoria" class="cor-destaque-bg text-white px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wide"></span>
+                <h2 id="detalheNome" class="text-xl font-bold text-gray-900 mt-2"></h2>
+                <p id="detalheDescricao" class="text-gray-500 text-sm mt-2 leading-relaxed"></p>
+                <div class="flex items-center justify-between mt-5">
+                    <span id="detalhePreco" class="text-2xl font-extrabold cor-botao-text"></span>
+                    <div class="flex items-center gap-3">
+                        <button onclick="alterarQtdDetalhe(-1)" class="w-9 h-9 bg-gray-100 active:bg-gray-200 rounded-lg font-bold text-gray-600 flex items-center justify-center cursor-pointer">-</button>
+                        <span id="detalheQtd" class="font-bold text-base w-5 text-center">0</span>
+                        <button onclick="alterarQtdDetalhe(1)" class="w-9 h-9 cor-botao-bg text-white rounded-lg font-bold flex items-center justify-center cursor-pointer">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Barra Fixa Inferior (Carrinho) -->
-    <div id="barra-carrinho" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-xl hidden z-40">
+    <div id="barra-carrinho" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-2xl hidden z-40">
         <div class="max-w-md mx-auto flex justify-between items-center">
             <div>
                 <p class="text-xs text-gray-400 uppercase font-semibold">Seu Carrinho</p>
                 <p class="text-lg font-bold text-slate-900" id="carrinho-total">R$ 0,00</p>
             </div>
-            <button onclick="abrirCheckout()" class="bg-amber-500 hover:bg-amber-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow transition cursor-pointer flex items-center gap-2">
+            <button onclick="abrirCheckout()" class="cor-botao-bg text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow transition cursor-pointer flex items-center gap-2">
                 Ver Pedido <i class="fa-solid fa-arrow-right text-xs"></i>
             </button>
         </div>
@@ -45,57 +113,51 @@
     <!-- Tela de Fechamento do Pedido (Checkout) -->
     <div id="modalCheckout" class="fixed inset-0 bg-black/60 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 overflow-y-auto">
         <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
-            <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-slate-900 text-white rounded-t-2xl sm:rounded-t-2xl">
+            <div class="p-4 border-b border-gray-100 flex justify-between items-center cor-primaria-bg text-white rounded-t-2xl sm:rounded-t-2xl">
                 <h3 class="font-bold text-lg">Finalizar Pedido</h3>
                 <button onclick="fecharCheckout()" class="text-gray-400 hover:text-white text-xl p-1 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
             <form onsubmit="enviarPedido(event)" class="p-6 space-y-4 overflow-y-auto flex-1 text-sm">
-                <!-- Seção de Dados Pessoais -->
                 <div>
                     <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Seu Nome</label>
-                    <input type="text" id="cliNome" required class="w-full border border-gray-300 rounded-xl p-3 focus:outline-amber-500">
+                    <input type="text" id="cliNome" required class="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 cor-botao-ring">
                 </div>
                 <div>
                     <label class="block text-xs font-bold uppercase text-gray-400 mb-1">WhatsApp</label>
-                    <input type="tel" id="cliWhats" placeholder="(63) 99999-9999" required class="w-full border border-gray-300 rounded-xl p-3 focus:outline-amber-500">
+                    <input type="tel" id="cliWhats" placeholder="(63) 99999-9999" required class="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 cor-botao-ring">
                 </div>
 
-                <!-- Seção de Entrega com GPS -->
                 <div class="border-t border-gray-100 pt-4">
                     <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Endereço de Entrega</label>
-                    <textarea id="cliEndereco" rows="2" placeholder="Rua, Número, Bairro e Ponto de referência" required class="w-full border border-gray-300 rounded-xl p-3 focus:outline-amber-500 mb-2"></textarea>
+                    <textarea id="cliEndereco" rows="2" placeholder="Rua, Número, Bairro e Ponto de referência" required class="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 cor-botao-ring mb-2"></textarea>
 
-                    <!-- Botão do GPS -->
                     <button type="button" onclick="capturarLocalizacao()" id="btnGps" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2.5 px-4 rounded-xl transition cursor-pointer text-xs flex items-center justify-center gap-2 border border-gray-200">
-                        <i class="fa-solid fa-location-crosshairs text-amber-500"></i> <span id="txtGps">Usar minha localização atual (GPS)</span>
+                        <i class="fa-solid fa-location-crosshairs cor-botao-text"></i> <span id="txtGps">Usar minha localização atual (GPS)</span>
                     </button>
                     <input type="hidden" id="cliGps">
                 </div>
 
-                <!-- Observações -->
                 <div>
                     <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Observações do Pedido</label>
-                    <input type="text" id="cliObs" placeholder="Ex: Tirar cebola, ponto da carne, etc." class="w-full border border-gray-300 rounded-xl p-3 focus:outline-amber-500">
+                    <input type="text" id="cliObs" placeholder="Ex: Tirar cebola, ponto da carne, etc." class="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 cor-botao-ring">
                 </div>
 
-                <!-- Forma de Pagamento -->
                 <div class="border-t border-gray-100 pt-4">
                     <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Forma de Pagamento</label>
                     <div class="grid grid-cols-2 gap-3 mt-1">
-                        <label class="border border-gray-200 p-3 rounded-xl flex items-center gap-2 cursor-pointer hover:bg-amber-50/50 has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
-                            <input type="radio" name="pagamento" value="Pix" checked class="accent-amber-500">
+                        <label class="border border-gray-200 p-3 rounded-xl flex items-center gap-2 cursor-pointer hover:bg-gray-50 has-[:checked]:cor-botao-border has-[:checked]:bg-amber-50">
+                            <input type="radio" name="pagamento" value="Pix" checked>
                             <span class="font-medium"><i class="fa-solid fa-pix text-teal-500 mr-1"></i> Pix</span>
                         </label>
-                        <label class="border border-gray-200 p-3 rounded-xl flex items-center gap-2 cursor-pointer hover:bg-amber-50/50 has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
-                            <input type="radio" name="pagamento" value="Cartão" class="accent-amber-500">
+                        <label class="border border-gray-200 p-3 rounded-xl flex items-center gap-2 cursor-pointer hover:bg-gray-50 has-[:checked]:cor-botao-border has-[:checked]:bg-amber-50">
+                            <input type="radio" name="pagamento" value="Cartão">
                             <span class="font-medium"><i class="fa-solid fa-credit-card text-blue-500 mr-1"></i> Cartão</span>
                         </label>
                     </div>
                 </div>
 
-                <!-- Botão Confirmar -->
-                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition cursor-pointer text-base mt-4">
+                <button type="submit" class="w-full cor-botao-bg text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition cursor-pointer text-base mt-4">
                     Confirmar e Pagar
                 </button>
             </form>
@@ -106,13 +168,90 @@
         // ATENÇÃO: cole aqui a URL do seu Apps Script, SEMPRE em uma única linha, sem quebras.
         const API_URL = "https://script.google.com/macros/s/AKfycbxOjeW76WQYdksHvgXFTC5BCviwlTeUtg_5EOVgxsN8xPosOafe-gj8WDpPryCYmvDf/exec";
 
+        // Fontes suportadas para carregamento dinâmico via Google Fonts
+        const FONTES_DISPONIVEIS = {
+            "Poppins": "Poppins:wght@400;500;600;700;800",
+            "Inter": "Inter:wght@400;500;600;700;800",
+            "Roboto": "Roboto:wght@400;500;700;900",
+            "Montserrat": "Montserrat:wght@400;500;600;700;800",
+            "Nunito": "Nunito:wght@400;600;700;800",
+            "Playfair Display": "Playfair+Display:wght@500;600;700;800"
+        };
+
         let carrinho = {};
         let produtosGlobais = [];
+        let produtoDetalheAtual = null;
+
+        function aplicarConfig(config) {
+            // Textos do cabeçalho
+            document.getElementById("nomeLoja").innerText = config.nome_loja || "Cardápio Digital";
+            document.title = (config.nome_loja || "Cardápio Digital") + " - Cardápio";
+
+            if (config.exibir_slogan !== "false" && config.slogan) {
+                document.getElementById("sloganLoja").innerText = config.slogan;
+            } else {
+                document.getElementById("sloganLoja").classList.add("hidden");
+            }
+
+            if (config.exibir_logo !== "false" && config.logo_url) {
+                const logo = document.getElementById("logoLoja");
+                logo.src = config.logo_url;
+                logo.classList.remove("hidden");
+            }
+
+            if (config.exibir_banner !== "false" && config.banner_url) {
+                const banner = document.getElementById("bannerDestaque");
+                banner.style.backgroundImage = `url('${config.banner_url}')`;
+                banner.classList.remove("hidden");
+            }
+
+            if (config.exibir_horario !== "false" && (config.horario_abertura || config.horario_fechamento)) {
+                document.getElementById("txtHorario").innerText = `${config.horario_abertura || "--:--"} às ${config.horario_fechamento || "--:--"}`;
+                document.getElementById("badgeHorario").classList.remove("hidden");
+            }
+
+            if (config.exibir_dias !== "false" && config.dias_funcionamento) {
+                document.getElementById("txtDias").innerText = config.dias_funcionamento;
+                document.getElementById("badgeDias").classList.remove("hidden");
+            }
+
+            // Cores do tema
+            const raiz = document.documentElement.style;
+            if (config.cor_primaria) raiz.setProperty("--cor-primaria", config.cor_primaria);
+            if (config.cor_botao) {
+                raiz.setProperty("--cor-botao", config.cor_botao);
+                raiz.setProperty("--cor-botao-hover", config.cor_botao);
+            }
+            if (config.cor_destaque) raiz.setProperty("--cor-destaque", config.cor_destaque);
+
+            // Fonte e tamanho
+            if (config.fonte && FONTES_DISPONIVEIS[config.fonte]) {
+                document.getElementById("fonteGoogle").href = `https://fonts.googleapis.com/css2?family=${FONTES_DISPONIVEIS[config.fonte]}&display=swap`;
+                raiz.setProperty("--fonte", `'${config.fonte}', sans-serif`);
+            }
+            if (config.tamanho_fonte) {
+                raiz.setProperty("--tamanho-fonte", `${config.tamanho_fonte}px`);
+            }
+        }
+
+        async function carregarConfig() {
+            try {
+                const resp = await fetch(`${API_URL}?sheet=Config&_t=${Date.now()}`);
+                if (!resp.ok) return;
+                const linhas = await resp.json();
+                if (!Array.isArray(linhas)) return;
+
+                const config = {};
+                linhas.forEach(l => { config[l.chave] = l.valor; });
+                aplicarConfig(config);
+            } catch (e) {
+                console.warn("Não foi possível carregar configurações personalizadas, usando padrão.", e);
+            }
+        }
 
         async function carregarCardapio() {
             const container = document.getElementById("cardapio-container");
             try {
-                // Cache buster para sempre pegar a versão mais recente da planilha
                 const response = await fetch(`${API_URL}?sheet=Produtos&_t=${Date.now()}`);
 
                 if (!response.ok) {
@@ -127,10 +266,7 @@
 
                 container.innerHTML = "";
 
-                // Filtrar apenas produtos disponíveis
                 const disponiveis = produtosGlobais.filter(p => p.status === "Disponível");
-
-                // Agrupar por categoria
                 const categorias = [...new Set(disponiveis.map(p => p.categoria))];
 
                 if (categorias.length === 0) {
@@ -139,26 +275,25 @@
                 }
 
                 categorias.forEach(cat => {
-                    let htmlCat = `<div class="space-y-3"><h2 class="text-lg font-bold text-slate-900 border-l-4 border-amber-500 pl-2 uppercase tracking-wide text-xs">${cat}</h2><div class="space-y-3">`;
+                    let htmlCat = `<div class="space-y-3"><h2 class="text-sm font-bold cor-primaria-text border-l-4 cor-botao-bg pl-2 uppercase tracking-wide">${cat}</h2><div class="space-y-3">`;
 
                     const itensCat = disponiveis.filter(p => p.categoria === cat);
                     itensCat.forEach(p => {
-
-                        // Limpeza estrita da URL da foto para evitar espaços em branco ou campos vazios que quebram a imagem
                         const fotoValida = (p.foto && String(p.foto).trim() !== "") ? String(p.foto).trim() : 'https://placehold.co/80x80?text=Sem+Foto';
+                        const descricaoCurta = (p.descricao || '').toString();
 
                         htmlCat += `
-                            <div class="bg-white p-3 rounded-xl shadow-xs border border-gray-100 flex gap-3 items-center">
-                                <img src="${fotoValida}" class="w-20 h-20 object-cover rounded-lg border border-gray-100 flex-shrink-0" onerror="this.onerror=null;this.src='https://placehold.co/80x80?text=Sem+Foto'">
+                            <div class="card-produto bg-white p-3 rounded-2xl shadow-sm hover:shadow-md border border-gray-100 flex gap-3 items-center cursor-pointer" onclick='abrirDetalhe(${JSON.stringify(p)})'>
+                                <img src="${fotoValida}" class="w-20 h-20 object-cover rounded-xl border border-gray-100 flex-shrink-0" onerror="this.onerror=null;this.src='https://placehold.co/80x80?text=Sem+Foto'">
                                 <div class="flex-1 min-w-0">
                                     <h3 class="font-bold text-gray-900 text-sm truncate">${p.nome}</h3>
-                                    <p class="text-xs text-gray-400 line-clamp-2 mt-0.5">${p.descricao || ''}</p>
+                                    <p class="text-xs text-gray-400 line-clamp-2 mt-0.5">${descricaoCurta}</p>
                                     <div class="flex justify-between items-center mt-2">
-                                        <span class="font-bold text-amber-600 text-sm">R$ ${parseFloat(p.preco).toFixed(2)}</span>
-                                        <div class="flex items-center gap-2">
+                                        <span class="font-bold cor-botao-text text-sm">R$ ${parseFloat(p.preco).toFixed(2)}</span>
+                                        <div class="flex items-center gap-2" onclick="event.stopPropagation()">
                                             <button onclick="alterarQtd('${p.id}', -1)" class="w-7 h-7 bg-gray-100 active:bg-gray-200 rounded-lg font-bold text-gray-600 flex items-center justify-center cursor-pointer text-xs">-</button>
                                             <span id="qtd-${p.id}" class="font-semibold text-sm w-4 text-center">0</span>
-                                            <button onclick="alterarQtd('${p.id}', 1)" class="w-7 h-7 bg-amber-500 active:bg-amber-600 rounded-lg font-bold text-white flex items-center justify-center cursor-pointer text-xs">+</button>
+                                            <button onclick="alterarQtd('${p.id}', 1)" class="w-7 h-7 cor-botao-bg active:opacity-80 rounded-lg font-bold text-white flex items-center justify-center cursor-pointer text-xs">+</button>
                                         </div>
                                     </div>
                                 </div>
@@ -174,13 +309,43 @@
             }
         }
 
+        // ---------- Modal de detalhes (descrição completa) ----------
+        function abrirDetalhe(p) {
+            produtoDetalheAtual = p;
+            const fotoValida = (p.foto && String(p.foto).trim() !== "") ? String(p.foto).trim() : 'https://placehold.co/400x300?text=Sem+Foto';
+
+            document.getElementById("detalheFoto").src = fotoValida;
+            document.getElementById("detalheCategoria").innerText = p.categoria || "";
+            document.getElementById("detalheNome").innerText = p.nome;
+            document.getElementById("detalheDescricao").innerText = p.descricao || "Sem descrição disponível.";
+            document.getElementById("detalhePreco").innerText = `R$ ${parseFloat(p.preco).toFixed(2)}`;
+            document.getElementById("detalheQtd").innerText = carrinho[p.id] || 0;
+
+            document.getElementById("modalDetalhe").classList.remove("hidden");
+        }
+
+        function fecharDetalhe() {
+            document.getElementById("modalDetalhe").classList.add("hidden");
+            produtoDetalheAtual = null;
+        }
+
+        function alterarQtdDetalhe(mudanca) {
+            if (!produtoDetalheAtual) return;
+            alterarQtd(produtoDetalheAtual.id, mudanca);
+            document.getElementById("detalheQtd").innerText = carrinho[produtoDetalheAtual.id] || 0;
+        }
+
+        // ---------- Carrinho ----------
         function alterarQtd(id, mudanca) {
             if (!carrinho[id]) carrinho[id] = 0;
             carrinho[id] += mudanca;
             if (carrinho[id] <= 0) delete carrinho[id];
 
-            document.getElementById(`qtd-${id}`).innerText = carrinho[id] || 0;
+            const spanQtd = document.getElementById(`qtd-${id}`);
+            if (spanQtd) spanQtd.innerText = carrinho[id] || 0;
+
             atualizarBarraCarrinho();
+            atualizarBadgeCarrinho();
         }
 
         function calcularTotal() {
@@ -192,6 +357,10 @@
             return total;
         }
 
+        function contarItens() {
+            return Object.values(carrinho).reduce((a, b) => a + b, 0);
+        }
+
         function atualizarBarraCarrinho() {
             const total = calcularTotal();
             const barra = document.getElementById("barra-carrinho");
@@ -200,6 +369,29 @@
                 barra.classList.remove("hidden");
             } else {
                 barra.classList.add("hidden");
+            }
+        }
+
+        function atualizarBadgeCarrinho() {
+            const badge = document.getElementById("badgeCarrinho");
+            const qtd = contarItens();
+            if (qtd > 0) {
+                badge.innerText = qtd;
+                badge.classList.remove("hidden");
+                const btn = document.getElementById("btnCarrinho");
+                btn.classList.remove("pulso");
+                void btn.offsetWidth; // reinicia a animação
+                btn.classList.add("pulso");
+            } else {
+                badge.classList.add("hidden");
+            }
+        }
+
+        function irParaCarrinho() {
+            if (contarItens() > 0) {
+                abrirCheckout();
+            } else {
+                document.getElementById("cardapio-container").scrollIntoView({ behavior: "smooth" });
             }
         }
 
@@ -254,7 +446,6 @@
 
             try {
                 // Content-Type "text/plain" evita o preflight OPTIONS, que o Apps Script não trata.
-                // Como o doPost já devolve o header Access-Control-Allow-Origin, a resposta pode ser lida normalmente.
                 const resposta = await fetch(API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "text/plain" },
@@ -268,6 +459,7 @@
                     fecharCheckout();
                     carrinho = {};
                     atualizarBarraCarrinho();
+                    atualizarBadgeCarrinho();
                     carregarCardapio();
                 } else {
                     alert("O servidor recusou o pedido: " + (resultado.message || resultado.status));
@@ -278,7 +470,10 @@
             }
         }
 
-        window.onload = carregarCardapio;
+        window.onload = async function () {
+            await carregarConfig();
+            await carregarCardapio();
+        };
     </script>
 </body>
 </html>
