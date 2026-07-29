@@ -3,63 +3,193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Admin - Açaí Gourmet</title>
+    <title>Painel Admin - Cardápio</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-gray-100 font-sans flex h-screen overflow-hidden">
 
     <!-- Barra Lateral -->
-    <div class="w-64 bg-slate-900 text-white flex flex-col justify-between">
+    <div class="w-64 bg-slate-900 text-white flex flex-col justify-between shrink-0">
         <div class="p-5">
             <h2 class="text-xl font-bold tracking-wider text-amber-500 flex items-center gap-2">
                 <i class="fa-solid fa-burger"></i> Admin Pro
             </h2>
             <nav class="mt-10 space-y-2">
-                <a href="#" class="flex items-center gap-3 px-4 py-3 bg-slate-800 rounded-lg text-white">
+                <a href="#" onclick="mudarAba('produtos'); return false;" id="navProdutos" class="flex items-center gap-3 px-4 py-3 bg-slate-800 rounded-lg text-white transition">
                     <i class="fa-solid fa-utensils w-5"></i> Cardápio / Produtos
+                </a>
+                <a href="#" onclick="mudarAba('personalizacao'); return false;" id="navPersonalizacao" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-800 rounded-lg text-gray-300 hover:text-white transition">
+                    <i class="fa-solid fa-palette w-5"></i> Personalização
                 </a>
             </nav>
         </div>
         <div class="p-5 border-t border-slate-800 text-xs text-gray-500">
-            v1.0.1 - Açaí Gourmet
+            v2.0 - Painel de Gestão
         </div>
     </div>
 
     <!-- Conteúdo Principal -->
     <div class="flex-1 flex flex-col overflow-y-auto">
-        <!-- Cabeçalho -->
-        <header class="bg-white shadow px-8 py-4 flex justify-between items-center">
-            <h1 class="text-xl font-semibold text-gray-800">Gestão do Cardápio</h1>
-            <button onclick="abrirModal()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-medium shadow flex items-center gap-2 transition cursor-pointer">
-                <i class="fa-solid fa-plus"></i> Novo Item
-            </button>
-        </header>
 
-        <!-- Área de Dados -->
-        <main class="p-8 max-w-7xl w-full mx-auto">
-            <div id="msgErro" class="hidden bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-4"></div>
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-50 border-b border-gray-200 text-gray-600 text-sm font-semibold uppercase">
-                            <th class="p-4">Foto</th>
-                            <th class="p-4">Item</th>
-                            <th class="p-4">Categoria</th>
-                            <th class="p-4">Preço</th>
-                            <th class="p-4">Status</th>
-                            <th class="p-4 text-right">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabela-produtos" class="divide-y divide-gray-100 text-gray-700 text-sm">
-                        <!-- Gerado por JS -->
-                    </tbody>
-                </table>
-            </div>
-        </main>
+        <!-- ==================== ABA PRODUTOS ==================== -->
+        <div id="abaProdutos">
+            <header class="bg-white shadow px-8 py-4 flex justify-between items-center">
+                <h1 class="text-xl font-semibold text-gray-800">Gestão do Cardápio</h1>
+                <button onclick="abrirModal()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-medium shadow flex items-center gap-2 transition cursor-pointer">
+                    <i class="fa-solid fa-plus"></i> Novo Item
+                </button>
+            </header>
+
+            <main class="p-8 max-w-7xl w-full mx-auto">
+                <div id="msgErro" class="hidden bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-4"></div>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 border-b border-gray-200 text-gray-600 text-sm font-semibold uppercase">
+                                <th class="p-4">Foto</th>
+                                <th class="p-4">Item</th>
+                                <th class="p-4">Categoria</th>
+                                <th class="p-4">Preço</th>
+                                <th class="p-4">Status</th>
+                                <th class="p-4 text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-produtos" class="divide-y divide-gray-100 text-gray-700 text-sm">
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+        </div>
+
+        <!-- ==================== ABA PERSONALIZAÇÃO ==================== -->
+        <div id="abaPersonalizacao" class="hidden">
+            <header class="bg-white shadow px-8 py-4 flex justify-between items-center">
+                <h1 class="text-xl font-semibold text-gray-800">Personalização do Cardápio</h1>
+                <button onclick="salvarConfig()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-medium shadow flex items-center gap-2 transition cursor-pointer">
+                    <i class="fa-solid fa-floppy-disk"></i> Salvar Alterações
+                </button>
+            </header>
+
+            <main class="p-8 max-w-4xl w-full mx-auto space-y-6">
+                <div id="msgConfigOk" class="hidden bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded-lg"></div>
+                <div id="msgConfigErro" class="hidden bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg"></div>
+
+                <!-- Identidade -->
+                <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h2 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-store text-amber-500"></i> Identidade da Loja</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Nome do Mercado / Loja</label>
+                            <input type="text" id="cfgNome" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Slogan</label>
+                            <input type="text" id="cfgSlogan" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">URL da Logo</label>
+                            <input type="url" id="cfgLogo" placeholder="https://link-da-logo.com/logo.png" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">URL do Banner de Destaque</label>
+                            <input type="url" id="cfgBanner" placeholder="https://link-do-banner.com/banner.jpg" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Horário e Funcionamento -->
+                <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h2 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fa-regular fa-clock text-amber-500"></i> Horário de Funcionamento</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Abre às</label>
+                            <input type="time" id="cfgHorarioAbertura" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Fecha às</label>
+                            <input type="time" id="cfgHorarioFechamento" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500">
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-2">Dias de Funcionamento</label>
+                        <div id="cfgDias" class="flex flex-wrap gap-2"></div>
+                    </div>
+                </section>
+
+                <!-- Cores do Tema -->
+                <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h2 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-palette text-amber-500"></i> Cores do Tema</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Cor do Cabeçalho</label>
+                            <div class="flex items-center gap-2">
+                                <input type="color" id="cfgCorPrimaria" class="w-10 h-10 border border-gray-300 rounded cursor-pointer">
+                                <input type="text" id="cfgCorPrimariaTxt" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Cor dos Botões</label>
+                            <div class="flex items-center gap-2">
+                                <input type="color" id="cfgCorBotao" class="w-10 h-10 border border-gray-300 rounded cursor-pointer">
+                                <input type="text" id="cfgCorBotaoTxt" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Cor de Destaque</label>
+                            <div class="flex items-center gap-2">
+                                <input type="color" id="cfgCorDestaque" class="w-10 h-10 border border-gray-300 rounded cursor-pointer">
+                                <input type="text" id="cfgCorDestaqueTxt" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tipografia -->
+                <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h2 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-font text-amber-500"></i> Tipografia</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Fonte do Cardápio</label>
+                            <select id="cfgFonte" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500">
+                                <option value="Poppins">Poppins</option>
+                                <option value="Inter">Inter</option>
+                                <option value="Roboto">Roboto</option>
+                                <option value="Montserrat">Montserrat</option>
+                                <option value="Nunito">Nunito</option>
+                                <option value="Playfair Display">Playfair Display</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Tamanho Base da Fonte (px)</label>
+                            <input type="range" id="cfgTamanhoFonte" min="13" max="20" value="16" class="w-full">
+                            <div class="text-xs text-gray-500 mt-1"><span id="cfgTamanhoFonteValor">16</span>px</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- O que exibir no cabeçalho -->
+                <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h2 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-eye text-amber-500"></i> O que exibir no cabeçalho do cliente</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-700">
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="cfgExibirLogo" class="accent-amber-500 w-4 h-4"> Logo</label>
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="cfgExibirSlogan" class="accent-amber-500 w-4 h-4"> Slogan</label>
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="cfgExibirBanner" class="accent-amber-500 w-4 h-4"> Banner de destaque</label>
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="cfgExibirHorario" class="accent-amber-500 w-4 h-4"> Horário de funcionamento</label>
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="cfgExibirDias" class="accent-amber-500 w-4 h-4"> Dias de funcionamento</label>
+                    </div>
+                </section>
+
+                <div class="flex justify-end">
+                    <button onclick="salvarConfig()" class="bg-amber-500 hover:bg-amber-600 text-white px-6 py-2.5 rounded-lg font-medium shadow flex items-center gap-2 transition cursor-pointer">
+                        <i class="fa-solid fa-floppy-disk"></i> Salvar Alterações
+                    </button>
+                </div>
+            </main>
+        </div>
     </div>
 
-    <!-- Modal Formulário (Adicionar/Editar) -->
+    <!-- Modal Formulário (Adicionar/Editar Produto) -->
     <div id="modalProduto" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-xl shadow-lg max-w-md w-full overflow-hidden">
             <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
@@ -115,7 +245,33 @@
         // Toda vez que você fizer "Nova versão" no Apps Script, atualize aqui e lá também.
         const API_URL = "https://script.google.com/macros/s/AKfycbxOjeW76WQYdksHvgXFTC5BCviwlTeUtg_5EOVgxsN8xPosOafe-gj8WDpPryCYmvDf/exec";
         const TOKEN = "acai_gourmet_pro_2026";
+        const DIAS_SEMANA = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
+        // ============ NAVEGAÇÃO ENTRE ABAS ============
+        function mudarAba(aba) {
+            const abaProdutos = document.getElementById("abaProdutos");
+            const abaPersonalizacao = document.getElementById("abaPersonalizacao");
+            const navProdutos = document.getElementById("navProdutos");
+            const navPersonalizacao = document.getElementById("navPersonalizacao");
+
+            if (aba === "produtos") {
+                abaProdutos.classList.remove("hidden");
+                abaPersonalizacao.classList.add("hidden");
+                navProdutos.classList.add("bg-slate-800", "text-white");
+                navProdutos.classList.remove("text-gray-300");
+                navPersonalizacao.classList.remove("bg-slate-800", "text-white");
+                navPersonalizacao.classList.add("text-gray-300");
+            } else {
+                abaPersonalizacao.classList.remove("hidden");
+                abaProdutos.classList.add("hidden");
+                navPersonalizacao.classList.add("bg-slate-800", "text-white");
+                navPersonalizacao.classList.remove("text-gray-300");
+                navProdutos.classList.remove("bg-slate-800", "text-white");
+                navProdutos.classList.add("text-gray-300");
+            }
+        }
+
+        // ============ PRODUTOS ============
         function mostrarErro(msg) {
             const box = document.getElementById("msgErro");
             box.innerText = msg;
@@ -263,7 +419,152 @@
             }
         }
 
-        window.onload = carregarProdutos;
+        // ============ PERSONALIZAÇÃO ============
+        let diasSelecionados = new Set();
+
+        function montarBotoesDias() {
+            const container = document.getElementById("cfgDias");
+            container.innerHTML = "";
+            DIAS_SEMANA.forEach(dia => {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.innerText = dia;
+                btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold border transition cursor-pointer " +
+                    (diasSelecionados.has(dia) ? "bg-amber-500 text-white border-amber-500" : "bg-gray-50 text-gray-600 border-gray-300 hover:bg-gray-100");
+                btn.onclick = () => {
+                    if (diasSelecionados.has(dia)) diasSelecionados.delete(dia);
+                    else diasSelecionados.add(dia);
+                    montarBotoesDias();
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function sincronizarCorTexto(idCor, idTexto) {
+            document.getElementById(idCor).addEventListener("input", (e) => {
+                document.getElementById(idTexto).value = e.target.value;
+            });
+            document.getElementById(idTexto).addEventListener("input", (e) => {
+                if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) {
+                    document.getElementById(idCor).value = e.target.value;
+                }
+            });
+        }
+
+        async function carregarConfig() {
+            try {
+                const resp = await fetch(`${API_URL}?sheet=Config&_t=${Date.now()}`);
+                const linhas = await resp.json();
+                const config = {};
+                if (Array.isArray(linhas)) {
+                    linhas.forEach(l => { config[l.chave] = l.valor; });
+                }
+
+                document.getElementById("cfgNome").value = config.nome_loja || "Açaí Gourmet";
+                document.getElementById("cfgSlogan").value = config.slogan || "Pizzaria e Hamburgueria";
+                document.getElementById("cfgLogo").value = config.logo_url || "";
+                document.getElementById("cfgBanner").value = config.banner_url || "";
+                document.getElementById("cfgHorarioAbertura").value = config.horario_abertura || "18:00";
+                document.getElementById("cfgHorarioFechamento").value = config.horario_fechamento || "23:00";
+
+                diasSelecionados = new Set((config.dias_funcionamento || "Seg,Ter,Qua,Qui,Sex,Sáb").split(",").map(d => d.trim()).filter(Boolean));
+                montarBotoesDias();
+
+                const corPrimaria = config.cor_primaria || "#0f172a";
+                const corBotao = config.cor_botao || "#f59e0b";
+                const corDestaque = config.cor_destaque || "#f59e0b";
+                document.getElementById("cfgCorPrimaria").value = corPrimaria;
+                document.getElementById("cfgCorPrimariaTxt").value = corPrimaria;
+                document.getElementById("cfgCorBotao").value = corBotao;
+                document.getElementById("cfgCorBotaoTxt").value = corBotao;
+                document.getElementById("cfgCorDestaque").value = corDestaque;
+                document.getElementById("cfgCorDestaqueTxt").value = corDestaque;
+
+                document.getElementById("cfgFonte").value = config.fonte || "Poppins";
+                document.getElementById("cfgTamanhoFonte").value = config.tamanho_fonte || 16;
+                document.getElementById("cfgTamanhoFonteValor").innerText = config.tamanho_fonte || 16;
+
+                document.getElementById("cfgExibirLogo").checked = config.exibir_logo !== "false";
+                document.getElementById("cfgExibirSlogan").checked = config.exibir_slogan !== "false";
+                document.getElementById("cfgExibirBanner").checked = config.exibir_banner !== "false";
+                document.getElementById("cfgExibirHorario").checked = config.exibir_horario !== "false";
+                document.getElementById("cfgExibirDias").checked = config.exibir_dias !== "false";
+            } catch (e) {
+                console.error("Erro ao carregar configurações:", e);
+                diasSelecionados = new Set(["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]);
+                montarBotoesDias();
+            }
+        }
+
+        async function salvarConfig() {
+            const config = {
+                nome_loja: document.getElementById("cfgNome").value,
+                slogan: document.getElementById("cfgSlogan").value,
+                logo_url: document.getElementById("cfgLogo").value,
+                banner_url: document.getElementById("cfgBanner").value,
+                horario_abertura: document.getElementById("cfgHorarioAbertura").value,
+                horario_fechamento: document.getElementById("cfgHorarioFechamento").value,
+                dias_funcionamento: Array.from(diasSelecionados).join(","),
+                cor_primaria: document.getElementById("cfgCorPrimariaTxt").value,
+                cor_botao: document.getElementById("cfgCorBotaoTxt").value,
+                cor_destaque: document.getElementById("cfgCorDestaqueTxt").value,
+                fonte: document.getElementById("cfgFonte").value,
+                tamanho_fonte: document.getElementById("cfgTamanhoFonte").value,
+                exibir_logo: document.getElementById("cfgExibirLogo").checked ? "true" : "false",
+                exibir_slogan: document.getElementById("cfgExibirSlogan").checked ? "true" : "false",
+                exibir_banner: document.getElementById("cfgExibirBanner").checked ? "true" : "false",
+                exibir_horario: document.getElementById("cfgExibirHorario").checked ? "true" : "false",
+                exibir_dias: document.getElementById("cfgExibirDias").checked ? "true" : "false"
+            };
+
+            const msgOk = document.getElementById("msgConfigOk");
+            const msgErro = document.getElementById("msgConfigErro");
+            msgOk.classList.add("hidden");
+            msgErro.classList.add("hidden");
+
+            try {
+                const resposta = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain" },
+                    body: JSON.stringify({ token: TOKEN, action: "save_config", config })
+                });
+
+                const resultado = await resposta.json();
+
+                if (resultado.status === "unauthorized") {
+                    msgErro.innerText = "Token inválido. Verifique se o TOKEN no admin.html é igual ao do Apps Script.";
+                    msgErro.classList.remove("hidden");
+                    return;
+                }
+
+                if (resultado.status !== "success") {
+                    msgErro.innerText = "O servidor recusou a operação: " + (resultado.message || JSON.stringify(resultado));
+                    msgErro.classList.remove("hidden");
+                    return;
+                }
+
+                msgOk.innerText = "Configurações salvas com sucesso! As alterações já aparecem no cardápio dos clientes.";
+                msgOk.classList.remove("hidden");
+                setTimeout(() => msgOk.classList.add("hidden"), 4000);
+            } catch (error) {
+                console.error("Erro ao salvar configurações:", error);
+                msgErro.innerText = "Falha ao salvar. Verifique a URL da API e a conexão. Detalhe: " + error.message;
+                msgErro.classList.remove("hidden");
+            }
+        }
+
+        document.getElementById("cfgTamanhoFonte").addEventListener("input", (e) => {
+            document.getElementById("cfgTamanhoFonteValor").innerText = e.target.value;
+        });
+
+        sincronizarCorTexto("cfgCorPrimaria", "cfgCorPrimariaTxt");
+        sincronizarCorTexto("cfgCorBotao", "cfgCorBotaoTxt");
+        sincronizarCorTexto("cfgCorDestaque", "cfgCorDestaqueTxt");
+
+        window.onload = function () {
+            carregarProdutos();
+            carregarConfig();
+        };
     </script>
 </body>
 </html>
