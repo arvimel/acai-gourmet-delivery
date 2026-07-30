@@ -193,11 +193,12 @@
                 document.getElementById("sloganLoja").classList.add("hidden");
             }
 
-            if (config.exibir_logo !== "false" && config.logo_url) {
-                const logo = document.getElementById("logoLoja");
-                logo.src = config.logo_url;
-                logo.classList.remove("hidden");
-            }
+if (config.exibir_logo !== "false" && config.logo_url) {
+    const logo = document.getElementById("logoLoja");
+    logo.src = config.logo_url;
+    logo.classList.remove("hidden");
+    logo.style.display = "block"; // <-- ADICIONE APENAS ESTA LINHA
+}
 
             if (config.exibir_banner !== "false" && config.banner_url) {
                 const banner = document.getElementById("bannerDestaque");
