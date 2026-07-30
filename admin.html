@@ -88,12 +88,28 @@
                             <input type="text" id="cfgSlogan" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">URL da Logo</label>
-                            <input type="url" id="cfgLogo" placeholder="https://link-da-logo.com/logo.png" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500">
+                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Logo da Loja</label>
+                            <div class="flex items-center gap-3">
+                                <img id="previewLogo" class="hidden w-12 h-12 rounded-full object-cover border border-gray-200" src="">
+                                <button type="button" onclick="document.getElementById('arquivoLogo').click()" class="px-3 py-2 border border-gray-300 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-50 cursor-pointer flex items-center gap-2 shrink-0">
+                                    <i class="fa-solid fa-upload"></i> Enviar imagem
+                                </button>
+                                <input type="file" id="arquivoLogo" accept="image/*" class="hidden" onchange="enviarImagemDoInput(this, 'cfgLogo', 'previewLogo', 'statusLogo')">
+                            </div>
+                            <input type="url" id="cfgLogo" placeholder="ou cole aqui a URL de uma imagem" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500 mt-2">
+                            <p id="statusLogo" class="text-xs mt-1"></p>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">URL do Banner de Destaque</label>
-                            <input type="url" id="cfgBanner" placeholder="https://link-do-banner.com/banner.jpg" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500">
+                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Banner de Destaque</label>
+                            <div class="flex items-center gap-3">
+                                <img id="previewBanner" class="hidden w-20 h-12 rounded-lg object-cover border border-gray-200" src="">
+                                <button type="button" onclick="document.getElementById('arquivoBanner').click()" class="px-3 py-2 border border-gray-300 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-50 cursor-pointer flex items-center gap-2 shrink-0">
+                                    <i class="fa-solid fa-upload"></i> Enviar imagem
+                                </button>
+                                <input type="file" id="arquivoBanner" accept="image/*" class="hidden" onchange="enviarImagemDoInput(this, 'cfgBanner', 'previewBanner', 'statusBanner')">
+                            </div>
+                            <input type="url" id="cfgBanner" placeholder="ou cole aqui a URL de uma imagem" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500 mt-2">
+                            <p id="statusBanner" class="text-xs mt-1"></p>
                         </div>
                     </div>
                 </section>
@@ -222,8 +238,16 @@
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">URL da Foto do Item</label>
-                    <input type="url" id="prodFoto" placeholder="https://linkdafoto.com/imagem.jpg" class="w-full border border-gray-300 rounded-lg p-2 focus:outline-amber-500 text-sm">
+                    <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Foto do Item</label>
+                    <div class="flex items-center gap-3 mb-2">
+                        <img id="previewProdFoto" class="hidden w-12 h-12 rounded-lg object-cover border border-gray-200" src="">
+                        <button type="button" onclick="document.getElementById('arquivoProdFoto').click()" class="px-3 py-2 border border-gray-300 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-50 cursor-pointer flex items-center gap-2 shrink-0">
+                            <i class="fa-solid fa-upload"></i> Enviar imagem
+                        </button>
+                        <input type="file" id="arquivoProdFoto" accept="image/*" class="hidden" onchange="enviarImagemDoInput(this, 'prodFoto', 'previewProdFoto', 'statusProdFoto')">
+                    </div>
+                    <input type="url" id="prodFoto" placeholder="ou cole aqui a URL de uma imagem" class="w-full border border-gray-300 rounded-lg p-2 focus:outline-amber-500 text-sm">
+                    <p id="statusProdFoto" class="text-xs mt-1"></p>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Status nas Vendas</label>
@@ -246,6 +270,76 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbxOjeW76WQYdksHvgXFTC5BCviwlTeUtg_5EOVgxsN8xPosOafe-gj8WDpPryCYmvDf/exec";
         const TOKEN = "acai_gourmet_pro_2026";
         const DIAS_SEMANA = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
+
+        // ============ UPLOAD DE IMAGENS (logo, banner, foto de produto) ============
+        const TAMANHO_MAXIMO_MB = 5;
+
+        function lerArquivoComoBase64(arquivo) {
+            return new Promise((resolve, reject) => {
+                const leitor = new FileReader();
+                leitor.onload = () => resolve(leitor.result.split(",")[1]);
+                leitor.onerror = () => reject(new Error("Não foi possível ler o arquivo."));
+                leitor.readAsDataURL(arquivo);
+            });
+        }
+
+        async function enviarImagemDoInput(inputArquivo, idCampoUrl, idPreview, idStatus) {
+            const arquivo = inputArquivo.files[0];
+            if (!arquivo) return;
+
+            const status = document.getElementById(idStatus);
+            const preview = document.getElementById(idPreview);
+
+            if (!arquivo.type.startsWith("image/")) {
+                status.className = "text-xs mt-1 text-red-600";
+                status.innerText = "Escolha um arquivo de imagem válido.";
+                return;
+            }
+
+            if (arquivo.size > TAMANHO_MAXIMO_MB * 1024 * 1024) {
+                status.className = "text-xs mt-1 text-red-600";
+                status.innerText = `A imagem deve ter no máximo ${TAMANHO_MAXIMO_MB}MB.`;
+                return;
+            }
+
+            status.className = "text-xs mt-1 text-gray-500";
+            status.innerText = "Enviando imagem...";
+
+            try {
+                const base64 = await lerArquivoComoBase64(arquivo);
+
+                const resposta = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain" },
+                    body: JSON.stringify({
+                        token: TOKEN,
+                        action: "upload_imagem",
+                        nomeArquivo: arquivo.name,
+                        mimeType: arquivo.type,
+                        dadosBase64: base64
+                    })
+                });
+
+                const resultado = await resposta.json();
+
+                if (resultado.status !== "success") {
+                    throw new Error(resultado.message || "O servidor recusou o envio da imagem.");
+                }
+
+                document.getElementById(idCampoUrl).value = resultado.url;
+                preview.src = resultado.url;
+                preview.classList.remove("hidden");
+                status.className = "text-xs mt-1 text-green-600";
+                status.innerText = "Imagem enviada com sucesso!";
+                setTimeout(() => { status.innerText = ""; }, 4000);
+            } catch (erro) {
+                console.error("Erro ao enviar imagem:", erro);
+                status.className = "text-xs mt-1 text-red-600";
+                status.innerText = "Falha ao enviar: " + erro.message;
+            } finally {
+                inputArquivo.value = "";
+            }
+        }
 
         // ============ NAVEGAÇÃO ENTRE ABAS ============
         function mudarAba(aba) {
@@ -331,6 +425,8 @@
             document.getElementById("formProduto").reset();
             document.getElementById("prodId").value = "ID_" + Date.now();
             document.getElementById("modalTitulo").innerText = "Novo Produto";
+            document.getElementById("previewProdFoto").classList.add("hidden");
+            document.getElementById("statusProdFoto").innerText = "";
             document.getElementById("modalProduto").classList.remove("hidden");
         }
 
@@ -343,6 +439,16 @@
             document.getElementById("prodCategoria").value = prod.categoria;
             document.getElementById("prodFoto").value = prod.foto;
             document.getElementById("prodStatus").value = prod.status;
+            document.getElementById("statusProdFoto").innerText = "";
+
+            const previewProdFoto = document.getElementById("previewProdFoto");
+            if (prod.foto) {
+                previewProdFoto.src = prod.foto;
+                previewProdFoto.classList.remove("hidden");
+            } else {
+                previewProdFoto.classList.add("hidden");
+            }
+
             document.getElementById("modalProduto").classList.remove("hidden");
         }
 
@@ -464,6 +570,17 @@
                 document.getElementById("cfgSlogan").value = config.slogan || "Pizzaria e Hamburgueria";
                 document.getElementById("cfgLogo").value = config.logo_url || "";
                 document.getElementById("cfgBanner").value = config.banner_url || "";
+
+                if (config.logo_url) {
+                    const previewLogo = document.getElementById("previewLogo");
+                    previewLogo.src = config.logo_url;
+                    previewLogo.classList.remove("hidden");
+                }
+                if (config.banner_url) {
+                    const previewBanner = document.getElementById("previewBanner");
+                    previewBanner.src = config.banner_url;
+                    previewBanner.classList.remove("hidden");
+                }
                 document.getElementById("cfgHorarioAbertura").value = config.horario_abertura || "18:00";
                 document.getElementById("cfgHorarioFechamento").value = config.horario_fechamento || "23:00";
 
