@@ -37,9 +37,12 @@
 </head>
 <body class="bg-gray-50 text-gray-800 pb-28">
 
-    <!-- Cabeçalho da Loja -->
+   <!-- Cabeçalho da Loja -->
     <header class="cor-primaria-bg text-white relative overflow-hidden">
-        <!-- Botão de Carrinho (fixo, sempre visível) -->
+        <!-- Logo da Loja (Agora fixa no canto superior esquerdo) -->
+        <img id="logoLoja" src="" alt="Logo" onerror="this.style.display='none'" class="hidden w-12 h-12 rounded-full object-cover absolute top-4 left-4 z-20 border-2 border-white/30 shadow-lg">
+
+        <!-- Botão de Carrinho (fixo, sempre visível no canto direito) -->
         <button id="btnCarrinho" onclick="irParaCarrinho()" class="absolute top-4 right-4 z-20 bg-white/10 hover:bg-white/20 backdrop-blur border border-white/20 w-11 h-11 rounded-full flex items-center justify-center cursor-pointer transition">
             <i class="fa-solid fa-cart-shopping text-lg"></i>
             <span id="badgeCarrinho" class="hidden absolute -top-1.5 -right-1.5 cor-destaque-bg text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-slate-900">0</span>
@@ -49,7 +52,7 @@
         <div id="bannerDestaque" class="hidden w-full h-32 sm:h-44 bg-cover bg-center opacity-30 absolute inset-0"></div>
 
         <div class="relative text-center py-8 px-4">
-            <img id="logoLoja" src="" alt="Logo" onerror="this.style.display='none'" class="hidden w-16 h-16 rounded-full object-cover mx-auto mb-3 border-2 border-white/30 shadow-lg">
+            <!-- A tag antiga da logo foi removida daqui de dentro para não centralizar -->
             <h1 id="nomeLoja" class="text-3xl font-extrabold text-amber-500 cor-destaque-text tracking-wide">Cardápio Digital</h1>
             <p id="sloganLoja" class="text-gray-300 text-sm mt-1"></p>
 
