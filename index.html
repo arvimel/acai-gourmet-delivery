@@ -39,7 +39,7 @@
 
    <!-- Cabeçalho da Loja -->
     <header class="cor-primaria-bg text-white relative overflow-hidden">
-        <!-- Logo da Loja (Agora fixa no canto superior esquerdo) -->
+        <!-- Logo da Loja (Fixa no canto superior esquerdo) -->
         <img id="logoLoja" src="" alt="Logo" onerror="this.style.display='none'" class="hidden w-12 h-12 rounded-full object-cover absolute top-4 left-4 z-20 border-2 border-white/30 shadow-lg">
 
         <!-- Botão de Carrinho (fixo, sempre visível no canto direito) -->
@@ -52,7 +52,6 @@
         <div id="bannerDestaque" class="hidden w-full h-32 sm:h-44 bg-cover bg-center opacity-30 absolute inset-0"></div>
 
         <div class="relative text-center py-8 px-4">
-            <!-- A tag antiga da logo foi removida daqui de dentro para não centralizar -->
             <h1 id="nomeLoja" class="text-3xl font-extrabold text-amber-500 cor-destaque-text tracking-wide">Cardápio Digital</h1>
             <p id="sloganLoja" class="text-gray-300 text-sm mt-1"></p>
 
@@ -168,10 +167,8 @@
     </div>
 
     <script>
-        // ATENÇÃO: cole aqui a URL do seu Apps Script, SEMPRE em uma única linha, sem quebras.
         const API_URL = "https://script.google.com/macros/s/AKfycbxOjeW76WQYdksHvgXFTC5BCviwlTeUtg_5EOVgxsN8xPosOafe-gj8WDpPryCYmvDf/exec";
 
-        // Fontes suportadas para carregamento dinâmico via Google Fonts
         const FONTES_DISPONIVEIS = {
             "Poppins": "Poppins:wght@400;500;600;700;800",
             "Inter": "Inter:wght@400;500;600;700;800",
@@ -190,43 +187,60 @@
             document.getElementById("nomeLoja").innerText = config.nome_loja || "Cardápio Digital";
             document.title = (config.nome_loja || "Cardápio Digital") + " - Cardápio";
 
+            const slogan = document.getElementById("sloganLoja");
             if (config.exibir_slogan !== "false" && config.slogan) {
-                document.getElementById("sloganLoja").innerText = config.slogan;
+                slogan.innerText = config.slogan;
+                slogan.classList.remove("hidden");
             } else {
-                document.getElementById("sloganLoja").classList.add("hidden");
+                slogan.classList.add("hidden");
             }
 
-if (config.exibir_logo !== "false" && config.logo_url) {
-    const logo = document.getElementById("logoLoja");
-    logo.src = config.logo_url;
-    logo.classList.remove("hidden");
-    logo.style.display = "block"; // <-- ADICIONE APENAS ESTA LINHA
-}
+            // Controle estrito da Logo da Loja (Esconde se for limpa no admin)
+            const logo = document.getElementById("logoLoja");
+            if (config.exibir_logo !== "false" && config.logo_url && config.logo_url.trim() !== "") {
+                logo.src = config.logo_url;
+                logo.classList.remove("hidden");
+                logo.style.display = "block";
+            } else {
+                logo.classList.add("hidden");
+                logo.style.display = "none";
+                logo.src = "";
+            }
 
-            if (config.exibir_banner !== "false" && config.banner_url) {
-                const banner = document.getElementById("bannerDestaque");
+            // Controle estrito do Banner (Esconde se for limpo no admin)
+            const banner = document.getElementById("bannerDestaque");
+            if (config.exibir_banner !== "false" && config.banner_url && config.banner_url.trim() !== "") {
                 banner.style.backgroundImage = `url('${config.banner_url}')`;
                 banner.classList.remove("hidden");
+            } else {
+                banner.classList.add("hidden");
+                banner.style.backgroundImage = "none";
             }
 
             if (config.exibir_horario !== "false" && (config.horario_abertura || config.horario_fechamento)) {
                 document.getElementById("txtHorario").innerText = `${config.horario_abertura || "--:--"} às ${config.horario_fechamento || "--:--"}`;
                 document.getElementById("badgeHorario").style.display = "inline-block";
+            } else {
+                document.getElementById("badgeHorario").style.display = "none";
             }
 
             if (config.exibir_dias !== "false" && config.dias_funcionamento) {
                 document.getElementById("txtDias").innerText = config.dias_funcionamento;
                 document.getElementById("badgeDias").style.display = "inline-block";
+            } else {
+                document.getElementById("badgeDias").style.display = "none";
             }
 
-            // Cores do tema
+            // Cores do tema (Garante o retorno correto para o padrão de fábrica)
             const raiz = document.documentElement.style;
-            if (config.cor_primaria) raiz.setProperty("--cor-primaria", config.cor_primaria);
-            if (config.cor_botao) {
-                raiz.setProperty("--cor-botao", config.cor_botao);
-                raiz.setProperty("--cor-botao-hover", config.cor_botao);
-            }
-            if (config.cor_destaque) raiz.setProperty("--cor-destaque", config.cor_destaque);
+            const prim = config.cor_primaria || "#0f172a";
+            const bot = config.cor_botao || "#f59e0b";
+            const dest = config.cor_destaque || "#f59e0b";
+
+            raiz.setProperty("--cor-primaria", prim);
+            raiz.setProperty("--cor-botao", bot);
+            raiz.setProperty("--cor-botao-hover", bot);
+            raiz.setProperty("--cor-destaque", dest);
 
             // Fonte e tamanho
             if (config.fonte && FONTES_DISPONIVEIS[config.fonte]) {
@@ -249,7 +263,7 @@ if (config.exibir_logo !== "false" && config.logo_url) {
                 console.log("Config recebida do Apps Script:", linhas);
 
                 if (!Array.isArray(linhas)) {
-                    console.warn("Config: resposta não é uma lista (provavelmente a aba 'Config' ainda não existe, ou o Apps Script publicado está desatualizado). Resposta:", linhas);
+                    console.warn("Config: resposta não é uma lista. Resposta:", linhas);
                     return;
                 }
                 if (linhas.length === 0) {
@@ -326,7 +340,6 @@ if (config.exibir_logo !== "false" && config.logo_url) {
             }
         }
 
-        // ---------- Modal de detalhes (descrição completa) ----------
         function abrirDetalhe(p) {
             produtoDetalheAtual = p;
             const fotoValida = (p.foto && String(p.foto).trim() !== "") ? String(p.foto).trim() : 'https://placehold.co/400x300?text=Sem+Foto';
@@ -352,7 +365,6 @@ if (config.exibir_logo !== "false" && config.logo_url) {
             document.getElementById("detalheQtd").innerText = carrinho[produtoDetalheAtual.id] || 0;
         }
 
-        // ---------- Carrinho ----------
         function alterarQtd(id, mudanca) {
             if (!carrinho[id]) carrinho[id] = 0;
             carrinho[id] += mudanca;
@@ -397,7 +409,7 @@ if (config.exibir_logo !== "false" && config.logo_url) {
                 badge.classList.remove("hidden");
                 const btn = document.getElementById("btnCarrinho");
                 btn.classList.remove("pulso");
-                void btn.offsetWidth; // reinicia a animação
+                void btn.offsetWidth;
                 btn.classList.add("pulso");
             } else {
                 badge.classList.add("hidden");
@@ -462,7 +474,6 @@ if (config.exibir_logo !== "false" && config.logo_url) {
             };
 
             try {
-                // Content-Type "text/plain" evita o preflight OPTIONS, que o Apps Script não trata.
                 const resposta = await fetch(API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "text/plain" },
