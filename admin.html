@@ -3,58 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Administrativo - SaaS Cardápio</title>
+    <title>Painel Administrativo Central - SaaS Cardápio</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .tab-ativa { border-bottom-width: 2px; border-color: #f59e0b; color: #f59e0b; font-weight: 600; }
+    </style>
 </head>
-<body class="bg-slate-100 p-6 text-sm text-gray-800">
+<body class="bg-slate-50 text-gray-800 text-sm">
 
-    <div class="max-w-md mx-auto bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
-        <div class="bg-slate-900 text-white p-5">
-            <h2 class="text-lg font-bold">Configurações de Marketing</h2>
-            <p class="text-xs text-slate-400">Controle a promoção do dia e destaques do cardápio</p>
-        </div>
-
-        <form id="formPromo" onsubmit="salvarConfigPromo(event)" class="p-6 space-y-4">
-            
-            <!-- Toggle Ativar/Desativar -->
-            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
-                <div>
-                    <label class="font-bold text-gray-700 block">Promoção Especial Ativa?</label>
-                    <span class="text-xs text-gray-400">Exibir pop-up ao abrir o cardápio</span>
+    <!-- Topo do Painel com Logo à Esquerda -->
+    <header class="bg-slate-900 text-white shadow-md">
+        <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <!-- Logo do lado esquerdo garantida -->
+                <div class="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center shadow-inner flex-shrink-0 overflow-hidden">
+                    <img id="painelLogo" src="https://placehold.co/40x40?text=Loja" class="w-full h-full object-cover" onerror="this.style.display='none'">
                 </div>
-                <input type="checkbox" id="promo_ativa" class="w-5 h-5 accent-amber-500 cursor-pointer">
+                <div>
+                    <h1 class="text-lg font-bold tracking-wide">Painel Administrativo</h1>
+                    <p class="text-[11px] text-slate-400">Gestão de Cardápio & Marketing</p>
+                </div>
             </div>
+            <span class="bg-emerald-500/10 text-emerald-400 text-xs px-2.5 py-1 rounded-full border border-emerald-500/20 font-medium">
+                <i class="fa-solid fa-circle text-[8px] mr-1 animate-pulse"></i> Conectado
+            </span>
+        </div>
+    </header>
 
-            <!-- Título da Oferta -->
-            <div>
-                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Título da Promoção</label>
-                <input type="text" id="promo_titulo" placeholder="Ex: Combo Casal Imperdível! 🔥" class="w-full border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-amber-500">
-            </div>
-
-            <!-- Descrição da Oferta -->
-            <div>
-                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Descrição do Pop-up</label>
-                <textarea id="promo_descricao" rows="2" placeholder="Ex: 2 Açaís de 500ml + adicionais grátis por apenas..." class="w-full border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
-            </div>
-
-            <!-- Foto do Produto em Destaque -->
-            <div>
-                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Link da Foto da Promoção</label>
-                <input type="url" id="promo_foto" placeholder="https://linkdafoto.com/imagem.jpg" class="w-full border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-amber-500">
-                <span class="text-[11px] text-gray-400 mt-1 block">Deixe em branco para exibir apenas o texto.</span>
-            </div>
-
-            <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3.5 px-4 rounded-xl shadow transition cursor-pointer text-center">
-                Salvar Configurações
+    <!-- Menu de Navegação por Abas -->
+    <nav class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-5xl mx-auto px-4 flex gap-6">
+            <button onclick="mudarAba('produtos')" id="tab-produtos" class="tab-ativa py-3 px-1 text-gray-500 hover:text-amber-500 transition cursor-pointer flex items-center gap-2">
+                <i class="fa-solid fa-utensils"></i> Produtos
             </button>
-        </form>
-    </div>
+            <button onclick="mudarAba('marketing')" id="tab-marketing" class="py-3 px-1 text-gray-500 hover:text-amber-500 transition cursor-pointer flex items-center gap-2">
+                <i class="fa-solid fa-bullhorn"></i> Marketing e Combos
+            </button>
+        </div>
+    </nav>
+
+    <!-- Conteúdo Principal -->
+    <main class="max-w-5xl mx-auto p-4 sm:p-6">
+        
+        <!-- ABA: GERENCIAMENTO DE PRODUTOS -->
+        <section id="conteudo-produtos" class="space-y-6">
+            <div class="flex justify-between items-center">
+                <h2 class="text-base font-bold text-gray-900">Itens do Cardápio</h2>
+                <button class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl font-bold text-xs shadow transition cursor-pointer flex items-center gap-1.5">
+                    <i class="fa-solid fa-plus"></i> Novo Produto
+                </button>
+            </div>
+            
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                <div class="p-4 bg-gray-50 border-b border-gray-200 font-bold text-gray-600 grid grid-cols-4 gap-4">
+                    <div>Produto</div>
+                    <div>Categoria</div>
+                    <div>Preço</div>
+                    <div class="text-right">Ações</div>
+                </div>
+                <div class="divide-y divide-gray-100">
+                    <!-- Exemplo de item listado -->
+                    <div class="p-4 grid grid-cols-4 gap-4 items-center">
+                        <div class="font-medium text-gray-900">Açaí Tradicional 500ml</div>
+                        <div class="text-gray-500">Açaí Copos</div>
+                        <div class="font-bold text-slate-700">R$ 18,00</div>
+                        <div class="text-right space-x-2">
+                            <button class="text-slate-400 hover:text-amber-500 p-1 cursor-pointer"><i class="fa-solid fa-pen"></i></button>
+                            <button class="text-slate-400 hover:text-red-500 p-1 cursor-pointer"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ABA: MARKETING E COMBOS INTEGRADA -->
+        <section id="conteudo-marketing" class="hidden max-w-md mx-auto">
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                <div class="p-4 border-b border-gray-100 bg-slate-50 flex items-center gap-2">
+                    <i class="fa-solid fa-window-restore text-amber-500"></i>
+                    <h2 class="font-bold text-gray-900">Janela Flutuante de Ofertas</h2>
+                </div>
+
+                <form id="formMarketing" onsubmit="salvarConfigMarketing(event)" class="p-6 space-y-4">
+                    <!-- Status do Pop-up -->
+                    <div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-gray-200">
+                        <div>
+                            <label class="font-bold text-gray-700 block text-xs">Ativar Janela Flutuante?</label>
+                            <span class="text-[11px] text-gray-400">Exibe a oferta assim que o cliente entra</span>
+                        </div>
+                        <input type="checkbox" id="promo_ativa" class="w-5 h-5 accent-amber-500 cursor-pointer">
+                    </div>
+
+                    <!-- Título -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Título do Destaque</label>
+                        <input type="text" id="promo_titulo" placeholder="Ex: Combo Supremo de Açaí! 🔥" required class="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                    </div>
+
+                    <!-- Descrição -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Texto da Oferta</label>
+                        <textarea id="promo_descricao" rows="3" placeholder="Ex: Leve 2 e pague apenas 1 hoje. Adicione essa delícia direto na categoria Promoções e Combos!" class="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
+                    </div>
+
+                    <!-- Foto URL -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Link da Imagem da Campanha</label>
+                        <input type="url" id="promo_foto" placeholder="https://exemplo.com/sua-foto.jpg" class="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                    </div>
+
+                    <!-- Botões de Ação Dinâmicos -->
+                    <div class="pt-2 flex flex-col gap-2">
+                        <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-4 rounded-xl shadow transition cursor-pointer flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-floppy-disk"></i> Salvar e Aplicar
+                        </button>
+                        <button type="button" onclick="mudarAba('produtos')" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium py-2.5 px-4 rounded-xl transition cursor-pointer text-center text-xs">
+                            Voltar para Produtos
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+    </main>
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbxOjeW76WQYdksHvgXFTC5BCviwlTeUtg_5EOVgxsN8xPosOafe-gj8WDpPryCYmvDf/exec";
         const TOKEN_SEGURANCA = "acai_gourmet_pro_2026";
 
-        async function salvarConfigPromo(e) {
+        // Gerenciamento de Visibilidade das Seções (Abas)
+        function mudarAba(aba) {
+            const prodSec = document.getElementById("conteudo-produtos");
+            const markSec = document.getElementById("conteudo-marketing");
+            const tabProd = document.getElementById("tab-produtos");
+            const tabMark = document.getElementById("tab-marketing");
+
+            if (aba === 'produtos') {
+                prodSec.classList.remove("hidden");
+                markSec.classList.add("hidden");
+                tabProd.classList.add("tab-ativa");
+                tabMark.classList.remove("tab-ativa");
+            } else if (aba === 'marketing') {
+                prodSec.classList.add("hidden");
+                markSec.classList.remove("hidden");
+                tabProd.classList.remove("tab-ativa");
+                tabMark.classList.add("tab-ativa");
+                carregarConfigAtuais(); // Puxa o status atualizado da planilha ao abrir a aba
+            }
+        }
+
+        // Recupera as configurações de marketing direto da planilha para preencher o formulário
+        async function carregarConfigAtuais() {
+            try {
+                const resp = await fetch(`${API_URL}?sheet=Config&_t=${Date.now()}`);
+                if (!resp.ok) return;
+                const linhas = await resp.json();
+                
+                linhas.forEach(l => {
+                    if (l.chave === "promo_ativa") document.getElementById("promo_ativa").checked = (l.valor === "true");
+                    if (l.chave === "promo_titulo") document.getElementById("promo_titulo").value = l.valor;
+                    if (l.chave === "promo_descricao") document.getElementById("promo_descricao").value = l.valor;
+                    if (l.chave === "promo_foto") document.getElementById("promo_foto").value = l.valor;
+                    if (l.chave === "logo_url") document.getElementById("painelLogo").src = l.valor;
+                });
+            } catch (e) {
+                console.error("Erro ao sincronizar configurações locais", e);
+            }
+        }
+
+        // Grava as novas chaves de marketing mantendo o usuário na interface correta
+        async function salvarConfigMarketing(e) {
             e.preventDefault();
             
             const payload = {
@@ -77,14 +196,21 @@
                 
                 const res = await response.json();
                 if (res.status === "success") {
-                    alert("Configurações atualizadas com sucesso!");
+                    alert("Campanha salva! A janela flutuante e a sincronização com a categoria Promoções e Combos já estão ativas.");
+                    // Retorna automaticamente para a visualização de produtos após salvar
+                    mudarAba('produtos');
                 } else {
-                    alert("Erro ao atualizar: " + res.message);
+                    alert("Erro interno: " + res.message);
                 }
             } catch (err) {
-                alert("Falha de conexão com a API.");
+                alert("Falha crítica ao tentar alcançar o servidor.");
             }
         }
+
+        // Inicialização rápida
+        window.onload = function() {
+            carregarConfigAtuais();
+        };
     </script>
 </body>
 </html>
