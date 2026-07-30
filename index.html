@@ -99,6 +99,20 @@
         </div>
     </div>
 
+    <!-- Modal de Promoções (aparece ao abrir o cardápio, se houver itens em promoção) -->
+    <div id="modalPromocao" class="fixed inset-0 bg-black/70 hidden flex items-center justify-center p-4 z-[60]">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col fade-in">
+            <div class="cor-primaria-bg text-white p-4 flex justify-between items-center">
+                <h3 class="font-bold text-lg flex items-center gap-2"><i class="fa-solid fa-fire cor-destaque-text"></i> Promoções Especiais</h3>
+                <button onclick="fecharModalPromocao()" class="text-gray-300 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="listaPromocoes" class="p-4 space-y-3 overflow-y-auto"></div>
+            <div class="p-4 border-t border-gray-100">
+                <button onclick="fecharModalPromocao()" class="w-full cor-botao-bg text-white font-bold py-3 rounded-xl cursor-pointer">Ver Cardápio</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Barra Fixa Inferior (Carrinho) -->
     <div id="barra-carrinho" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-2xl hidden z-40">
         <div class="max-w-md mx-auto flex justify-between items-center">
@@ -181,8 +195,62 @@
         let carrinho = {};
         let produtosGlobais = [];
         let produtoDetalheAtual = null;
+        let configAtual = {};
+        let lojaAberta = true;
+        const DIAS_JS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+
+        // Calcula se a loja está aberta agora, com base no horário/dias configurados
+        // no admin e no botão de "fechar loja agora" (fechamento manual).
+        function calcularStatusLoja(config) {
+            if (config.loja_fechada_manual === "true") {
+                return { aberto: false };
+            }
+
+            const agora = new Date();
+            const diaAtual = DIAS_JS[agora.getDay()];
+            const diasFuncionamento = (config.dias_funcionamento || "Seg,Ter,Qua,Qui,Sex,Sáb")
+                .split(",").map(d => d.trim()).filter(Boolean);
+
+            const horarioAbertura = config.horario_abertura || "18:00";
+            const horarioFechamento = config.horario_fechamento || "23:00";
+            const [hA, mA] = horarioAbertura.split(":").map(Number);
+            const [hF, mF] = horarioFechamento.split(":").map(Number);
+
+            const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
+            const minutosAbertura = (hA || 0) * 60 + (mA || 0);
+            const minutosFechamento = (hF || 0) * 60 + (mF || 0);
+
+            const diaFunciona = diasFuncionamento.includes(diaAtual);
+
+            let dentroDoHorario;
+            if (minutosAbertura <= minutosFechamento) {
+                dentroDoHorario = minutosAgora >= minutosAbertura && minutosAgora < minutosFechamento;
+            } else {
+                // horário atravessa a meia-noite (ex: abre 18:00, fecha 02:00)
+                dentroDoHorario = minutosAgora >= minutosAbertura || minutosAgora < minutosFechamento;
+            }
+
+            return { aberto: diaFunciona && dentroDoHorario };
+        }
+
+        // Atualiza o selo "Aberto/Fechado" no topo do cardápio de acordo com o horário atual.
+        function atualizarBadgeStatus() {
+            const status = calcularStatusLoja(configAtual);
+            lojaAberta = status.aberto;
+            const badge = document.getElementById("badgeStatus");
+            if (!badge) return;
+
+            if (lojaAberta) {
+                badge.className = "inline-block bg-green-500/20 text-green-400 text-xs font-semibold px-3 py-1 rounded-full border border-green-500/30";
+                badge.innerHTML = '<i class="fa-solid fa-circle text-[9px] mr-1 animate-pulse"></i> Aberto para Pedidos';
+            } else {
+                badge.className = "inline-block bg-red-500/20 text-red-400 text-xs font-semibold px-3 py-1 rounded-full border border-red-500/30";
+                badge.innerHTML = '<i class="fa-solid fa-circle text-[9px] mr-1"></i> Fechado no Momento';
+            }
+        }
 
         function aplicarConfig(config) {
+            configAtual = config || {};
             // Textos do cabeçalho
             document.getElementById("nomeLoja").innerText = config.nome_loja || "Cardápio Digital";
             document.title = (config.nome_loja || "Cardápio Digital") + " - Cardápio";
@@ -250,6 +318,8 @@
             if (config.tamanho_fonte) {
                 raiz.setProperty("--tamanho-fonte", `${config.tamanho_fonte}px`);
             }
+
+            atualizarBadgeStatus();
         }
 
         async function carregarConfig() {
@@ -334,10 +404,48 @@
                     htmlCat += `</div></div>`;
                     container.innerHTML += htmlCat;
                 });
+                exibirPromocoesSeExistirem();
             } catch (e) {
                 console.error(e);
                 container.innerHTML = `<p class="text-center text-red-500 py-8 text-sm">Não foi possível carregar o cardápio. Verifique a URL da API e a conexão. Detalhe: ${e.message}</p>`;
             }
+        }
+
+        // Remove acentos para comparar categorias sem depender de maiúsculas/cedilha
+        function normalizarTexto(s) {
+            return (s || "").toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        }
+
+        // Mostra em um modal os itens da categoria "Promoção" assim que o cliente abre o cardápio.
+        function exibirPromocoesSeExistirem() {
+            const promocoes = produtosGlobais.filter(p =>
+                p.status === "Disponível" && normalizarTexto(p.categoria) === "promocao"
+            );
+
+            if (promocoes.length === 0) return;
+
+            const lista = document.getElementById("listaPromocoes");
+            lista.innerHTML = "";
+
+            promocoes.forEach(p => {
+                const fotoValida = (p.foto && String(p.foto).trim() !== "") ? String(p.foto).trim() : 'https://placehold.co/80x80?text=Sem+Foto';
+                lista.innerHTML += `
+                    <div class="flex gap-3 items-center bg-amber-50 border border-amber-200 rounded-xl p-3 cursor-pointer" onclick='fecharModalPromocao(); abrirDetalhe(${JSON.stringify(p)})'>
+                        <img src="${fotoValida}" class="w-16 h-16 object-cover rounded-lg border border-amber-100 flex-shrink-0" onerror="this.onerror=null;this.src='https://placehold.co/80x80?text=Sem+Foto'">
+                        <div class="flex-1 min-w-0">
+                            <h4 class="font-bold text-gray-900 text-sm truncate">${p.nome}</h4>
+                            <p class="text-xs text-gray-500 line-clamp-2">${(p.descricao || '').toString()}</p>
+                            <span class="font-bold cor-botao-text text-sm">R$ ${parseFloat(p.preco).toFixed(2)}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById("modalPromocao").classList.remove("hidden");
+        }
+
+        function fecharModalPromocao() {
+            document.getElementById("modalPromocao").classList.add("hidden");
         }
 
         function abrirDetalhe(p) {
@@ -424,7 +532,13 @@
             }
         }
 
-        function abrirCheckout() { document.getElementById("modalCheckout").classList.remove("hidden"); }
+        function abrirCheckout() {
+            if (!lojaAberta) {
+                alert("Estamos fechados no momento. Volte durante nosso horário de funcionamento para finalizar o pedido.");
+                return;
+            }
+            document.getElementById("modalCheckout").classList.remove("hidden");
+        }
         function fecharCheckout() { document.getElementById("modalCheckout").classList.add("hidden"); }
 
         function capturarLocalizacao() {
@@ -449,6 +563,12 @@
 
         async function enviarPedido(e) {
             e.preventDefault();
+
+            if (!lojaAberta) {
+                alert("Estamos fechados no momento. Volte durante nosso horário de funcionamento para finalizar o pedido.");
+                fecharCheckout();
+                return;
+            }
 
             let itensArray = [];
             Object.keys(carrinho).forEach(id => {
@@ -501,6 +621,9 @@
         window.onload = async function () {
             await carregarConfig();
             await carregarCardapio();
+            // Reavalia o horário a cada minuto, para fechar/abrir automaticamente
+            // sem precisar que o cliente recarregue a página.
+            setInterval(atualizarBadgeStatus, 60000);
         };
     </script>
 </body>
