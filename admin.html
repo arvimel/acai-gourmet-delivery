@@ -131,6 +131,19 @@
                         <label class="block text-xs font-semibold uppercase text-gray-500 mb-2">Dias de Funcionamento</label>
                         <div id="cfgDias" class="flex flex-wrap gap-2"></div>
                     </div>
+                    <p class="text-[11px] text-gray-400 mt-3">O cardápio verifica automaticamente a hora do fechamento configurada aqui e passa a exibir "Fechado" para os clientes assim que o horário virar, sem precisar deixar produtos como indisponíveis.</p>
+
+                    <div class="mt-4 flex items-center justify-between bg-red-50 border border-red-200 rounded-lg p-3 gap-4">
+                        <div>
+                            <p class="text-sm font-semibold text-red-700">Fechar a loja agora (pausar pedidos)</p>
+                            <p class="text-xs text-red-500">Use quando quiser encerrar os pedidos antes do horário normal. Enquanto estiver ativo, o cardápio fica marcado como fechado mesmo dentro do horário configurado.</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                            <input type="checkbox" id="cfgFecharManual" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-red-500 transition-colors"></div>
+                            <div class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"></div>
+                        </label>
+                    </div>
                 </section>
 
                 <!-- Cores do Tema -->
@@ -230,11 +243,14 @@
                     <div>
                         <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Categoria</label>
                         <select id="prodCategoria" class="w-full border border-gray-300 rounded-lg p-2 focus:outline-amber-500 text-sm">
+                            <option value="Promoção">Promoção</option>
+                            <option value="Combo">Combo</option>
                             <option value="Hambúrgueres">Hambúrgueres</option>
                             <option value="Pizzas">Pizzas</option>
                             <option value="Açaí">Açaí</option>
                             <option value="Bebidas">Bebidas</option>
                         </select>
+                        <p class="text-[11px] text-gray-400 mt-1">Itens da categoria <b>Promoção</b> aparecem automaticamente em destaque (modal) quando o cliente abre o cardápio.</p>
                     </div>
                 </div>
                 <div>
@@ -583,6 +599,7 @@
                 }
                 document.getElementById("cfgHorarioAbertura").value = config.horario_abertura || "18:00";
                 document.getElementById("cfgHorarioFechamento").value = config.horario_fechamento || "23:00";
+                document.getElementById("cfgFecharManual").checked = config.loja_fechada_manual === "true";
 
                 diasSelecionados = new Set((config.dias_funcionamento || "Seg,Ter,Qua,Qui,Sex,Sáb").split(",").map(d => d.trim()).filter(Boolean));
                 montarBotoesDias();
@@ -621,6 +638,7 @@
                 banner_url: document.getElementById("cfgBanner").value,
                 horario_abertura: document.getElementById("cfgHorarioAbertura").value,
                 horario_fechamento: document.getElementById("cfgHorarioFechamento").value,
+                loja_fechada_manual: document.getElementById("cfgFecharManual").checked ? "true" : "false",
                 dias_funcionamento: Array.from(diasSelecionados).join(","),
                 cor_primaria: document.getElementById("cfgCorPrimariaTxt").value,
                 cor_botao: document.getElementById("cfgCorBotaoTxt").value,
