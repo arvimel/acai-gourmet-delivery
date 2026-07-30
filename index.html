@@ -37,18 +37,35 @@
 </head>
 <body class="bg-gray-50 text-gray-800 pb-28">
 
+    <!-- Modal Surpresa de Promoção Especial do Dia -->
+    <div id="modalPromoDia" class="fixed inset-0 bg-black/70 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden fade-in text-center relative border-2 border-amber-500">
+            <button onclick="fecharPromo()" class="absolute top-3 right-3 bg-black/60 hover:bg-black/80 text-white w-8 h-8 rounded-full flex items-center justify-center cursor-pointer z-10">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="cursor-pointer text-left" onclick="irParaPromo()">
+                <img id="promoFoto" src="" class="w-full h-44 object-cover" onerror="this.style.display='none'">
+                <div class="p-5 text-center space-y-2">
+                    <span class="bg-red-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider animate-bounce inline-block">🔥 Oferta Especial de Hoje</span>
+                    <h3 id="promoTitulo" class="text-xl font-extrabold text-slate-900 mt-1"></h3>
+                    <p id="promoDescricao" class="text-gray-500 text-xs leading-relaxed"></p>
+                    <button class="w-full mt-3 cor-botao-bg text-white font-bold py-2.5 px-4 rounded-xl shadow cursor-pointer text-sm flex items-center justify-center gap-2">
+                        Aproveitar Oferta <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
    <!-- Cabeçalho da Loja -->
     <header class="cor-primaria-bg text-white relative overflow-hidden">
-        <!-- Logo da Loja (Fixa no canto superior esquerdo) -->
         <img id="logoLoja" src="" alt="Logo" onerror="this.style.display='none'" class="hidden w-12 h-12 rounded-full object-cover absolute top-4 left-4 z-20 border-2 border-white/30 shadow-lg">
 
-        <!-- Botão de Carrinho (fixo, sempre visível no canto direito) -->
         <button id="btnCarrinho" onclick="irParaCarrinho()" class="absolute top-4 right-4 z-20 bg-white/10 hover:bg-white/20 backdrop-blur border border-white/20 w-11 h-11 rounded-full flex items-center justify-center cursor-pointer transition">
             <i class="fa-solid fa-cart-shopping text-lg"></i>
             <span id="badgeCarrinho" class="hidden absolute -top-1.5 -right-1.5 cor-destaque-bg text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-slate-900">0</span>
         </button>
 
-        <!-- Banner de destaque (opcional) -->
         <div id="bannerDestaque" class="hidden w-full h-32 sm:h-44 bg-cover bg-center opacity-30 absolute inset-0"></div>
 
         <div class="relative text-center py-8 px-4">
@@ -76,7 +93,7 @@
         </div>
     </main>
 
-    <!-- Modal de Detalhes do Produto (descrição completa) -->
+    <!-- Modal de Detalhes do Produto -->
     <div id="modalDetalhe" class="fixed inset-0 bg-black/60 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 z-50">
         <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col fade-in">
             <div class="relative">
@@ -133,7 +150,6 @@
                 <div class="border-t border-gray-100 pt-4">
                     <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Endereço de Entrega</label>
                     <textarea id="cliEndereco" rows="2" placeholder="Rua, Número, Bairro e Ponto de referência" required class="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 cor-botao-ring mb-2"></textarea>
-
                     <button type="button" onclick="capturarLocalizacao()" id="btnGps" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2.5 px-4 rounded-xl transition cursor-pointer text-xs flex items-center justify-center gap-2 border border-gray-200">
                         <i class="fa-solid fa-location-crosshairs cor-botao-text"></i> <span id="txtGps">Usar minha localização atual (GPS)</span>
                     </button>
@@ -181,9 +197,9 @@
         let carrinho = {};
         let produtosGlobais = [];
         let produtoDetalheAtual = null;
+        let configGlobal = {};
 
         function aplicarConfig(config) {
-            // Textos do cabeçalho
             document.getElementById("nomeLoja").innerText = config.nome_loja || "Cardápio Digital";
             document.title = (config.nome_loja || "Cardápio Digital") + " - Cardápio";
 
@@ -195,7 +211,6 @@
                 slogan.classList.add("hidden");
             }
 
-            // Controle estrito da Logo da Loja (Esconde se for limpa no admin)
             const logo = document.getElementById("logoLoja");
             if (config.exibir_logo !== "false" && config.logo_url && config.logo_url.trim() !== "") {
                 logo.src = config.logo_url;
@@ -207,7 +222,6 @@
                 logo.src = "";
             }
 
-            // Controle estrito do Banner (Esconde se for limpo no admin)
             const banner = document.getElementById("bannerDestaque");
             if (config.exibir_banner !== "false" && config.banner_url && config.banner_url.trim() !== "") {
                 banner.style.backgroundImage = `url('${config.banner_url}')`;
@@ -231,7 +245,6 @@
                 document.getElementById("badgeDias").style.display = "none";
             }
 
-            // Cores do tema (Garante o retorno correto para o padrão de fábrica)
             const raiz = document.documentElement.style;
             const prim = config.cor_primaria || "#0f172a";
             const bot = config.cor_botao || "#f59e0b";
@@ -242,7 +255,6 @@
             raiz.setProperty("--cor-botao-hover", bot);
             raiz.setProperty("--cor-destaque", dest);
 
-            // Fonte e tamanho
             if (config.fonte && FONTES_DISPONIVEIS[config.fonte]) {
                 document.getElementById("fonteGoogle").href = `https://fonts.googleapis.com/css2?family=${FONTES_DISPONIVEIS[config.fonte]}&display=swap`;
                 raiz.setProperty("--fonte", `'${config.fonte}', sans-serif`);
@@ -255,28 +267,15 @@
         async function carregarConfig() {
             try {
                 const resp = await fetch(`${API_URL}?sheet=Config&_t=${Date.now()}`);
-                if (!resp.ok) {
-                    console.warn("Config: servidor respondeu com status", resp.status);
-                    return;
-                }
+                if (!resp.ok) return;
                 const linhas = await resp.json();
-                console.log("Config recebida do Apps Script:", linhas);
+                if (!Array.isArray(linhas)) return;
 
-                if (!Array.isArray(linhas)) {
-                    console.warn("Config: resposta não é uma lista. Resposta:", linhas);
-                    return;
-                }
-                if (linhas.length === 0) {
-                    console.warn("Config: a aba 'Config' existe mas está vazia. Salve as configurações no painel admin.");
-                    return;
-                }
-
-                const config = {};
-                linhas.forEach(l => { config[l.chave] = l.valor; });
-                console.log("Config aplicada:", config);
-                aplicarConfig(config);
+                configGlobal = {};
+                linhas.forEach(l => { configGlobal[l.chave] = l.valor; });
+                aplicarConfig(configGlobal);
             } catch (e) {
-                console.warn("Não foi possível carregar configurações personalizadas, usando padrão.", e);
+                console.warn("Não foi possível carregar configurações personalizadas.", e);
             }
         }
 
@@ -284,16 +283,10 @@
             const container = document.getElementById("cardapio-container");
             try {
                 const response = await fetch(`${API_URL}?sheet=Produtos&_t=${Date.now()}`);
-
-                if (!response.ok) {
-                    throw new Error(`Servidor respondeu com status ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`Status ${response.status}`);
 
                 produtosGlobais = await response.json();
-
-                if (produtosGlobais.error) {
-                    throw new Error(produtosGlobais.error);
-                }
+                if (produtosGlobais.error) throw new Error(produtosGlobais.error);
 
                 container.innerHTML = "";
 
@@ -306,7 +299,10 @@
                 }
 
                 categorias.forEach(cat => {
-                    let htmlCat = `<div class="space-y-3"><h2 class="text-sm font-bold cor-primaria-text border-l-4 cor-botao-bg pl-2 uppercase tracking-wide">${cat}</h2><div class="space-y-3">`;
+                    // ID dinâmico e padronizado para rastreamento (Ex: cat-combos-e-promocoes)
+                    let catId = "cat-" + cat.toLowerCase().replace(/[^a-z0-9]/g, "-");
+                    
+                    let htmlCat = `<div id="${catId}" class="space-y-3 pt-2"><h2 class="text-sm font-bold cor-primaria-text border-l-4 cor-botao-bg pl-2 uppercase tracking-wide">${cat}</h2><div class="space-y-3">`;
 
                     const itensCat = disponiveis.filter(p => p.categoria === cat);
                     itensCat.forEach(p => {
@@ -336,7 +332,46 @@
                 });
             } catch (e) {
                 console.error(e);
-                container.innerHTML = `<p class="text-center text-red-500 py-8 text-sm">Não foi possível carregar o cardápio. Verifique a URL da API e a conexão. Detalhe: ${e.message}</p>`;
+                container.innerHTML = `<p class="text-center text-red-500 py-8 text-sm">Não foi possível carregar o cardápio. Detalhe: ${e.message}</p>`;
+            }
+        }
+
+        // Funções do Modal Surpresa da Promoção Especial
+        function checarEExibirPromo() {
+            if (configGlobal.promo_ativa === "true" && configGlobal.promo_titulo) {
+                if (configGlobal.promo_foto && configGlobal.promo_foto.trim() !== "") {
+                    document.getElementById("promoFoto").src = configGlobal.promo_foto;
+                    document.getElementById("promoFoto").style.display = "block";
+                } else {
+                    document.getElementById("promoFoto").style.display = "none";
+                }
+                document.getElementById("promoTitulo").innerText = configGlobal.promo_titulo;
+                document.getElementById("promoDescricao").innerText = configGlobal.promo_descricao || "";
+                document.getElementById("modalPromoDia").classList.remove("hidden");
+            }
+        }
+
+        function fecharPromo() {
+            document.getElementById("modalPromoDia").classList.add("hidden");
+        }
+
+        function irParaPromo() {
+            fecharPromo();
+            // Busca de forma inteligente qualquer bloco de categoria que tenha "combo" ou "promo" no ID
+            const elementos = document.querySelectorAll('[id^="cat-"]');
+            let elementoAlvo = null;
+            elementos.forEach(el => {
+                const id = el.id.toLowerCase();
+                if (id.includes("combo") || id.includes("promo")) {
+                    elementoAlvo = el;
+                }
+            });
+
+            if (elementoAlvo) {
+                elementoAlvo.scrollIntoView({ behavior: "smooth", block: "start" });
+            } else {
+                // Se não achar a categoria específica, rola pro início da lista de produtos
+                document.getElementById("cardapio-container").scrollIntoView({ behavior: "smooth" });
             }
         }
 
@@ -431,7 +466,7 @@
             const btn = document.getElementById("btnGps");
             const txt = document.getElementById("txtGps");
 
-            if (!navigator.geolocation) { alert("GPS não suportado pelo seu navegador."); return; }
+            if (!navigator.geolocation) { alert("GPS não suportado."); return; }
 
             txt.innerText = "Localizando...";
             navigator.geolocation.getCurrentPosition((pos) => {
@@ -440,10 +475,10 @@
                 document.getElementById("cliGps").value = `https://www.google.com/maps?q=${lat},${lng}`;
                 btn.classList.replace("bg-slate-100", "bg-green-50");
                 btn.classList.add("border-green-300");
-                txt.innerHTML = "<span class='text-green-700 font-semibold'><i class='fa-solid fa-check'></i> GPS Vinculado com Sucesso!</span>";
+                txt.innerHTML = "<span class='text-green-700 font-semibold'><i class='fa-solid fa-check'></i> GPS Vinculado!</span>";
             }, (err) => {
                 txt.innerText = "Erro ao capturar GPS";
-                alert("Por favor, ative a localização no seu celular.");
+                alert("Ative a localização no seu dispositivo.");
             });
         }
 
@@ -490,17 +525,18 @@
                     atualizarBadgeCarrinho();
                     carregarCardapio();
                 } else {
-                    alert("O servidor recusou o pedido: " + (resultado.message || resultado.status));
+                    alert("Erro: " + (resultado.message || resultado.status));
                 }
             } catch (error) {
-                console.error("Erro na requisição:", error);
-                alert("Falha ao salvar o pedido. Verifique a conexão e a URL da API.");
+                console.error(error);
+                alert("Falha ao salvar o pedido.");
             }
         }
 
         window.onload = async function () {
             await carregarConfig();
             await carregarCardapio();
+            checarEExibirPromo(); // Executa o popup após carregar a interface e os produtos
         };
     </script>
 </body>
