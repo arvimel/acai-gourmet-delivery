@@ -199,6 +199,46 @@
         let produtoDetalheAtual = null;
         let configGlobal = {};
 
+        function verificarStatusFuncionamento(config) {
+            const badgeStatus = document.getElementById("badgeStatus");
+            if (!config.horario_abertura || !config.horario_fechamento) {
+                return true; 
+            }
+
+            const agora = new Date();
+            const horaAtual = agora.getHours();
+            const minAtual = agora.getMinutes();
+            const tempoAtual = horaAtual * 60 + minAtual;
+
+            const [hAbre, mAbre] = config.horario_abertura.split(':').map(Number);
+            const [hFecha, mFecha] = config.horario_fechamento.split(':').map(Number);
+
+            const tempoAbre = hAbre * 60 + mAbre;
+            let tempoFecha = hFecha * 60 + mFecha;
+
+            let aberto = false;
+
+            if (tempoFecha < tempoAbre) {
+                if (tempoAtual >= tempoAbre || tempoAtual < tempoFecha) {
+                    aberto = true;
+                }
+            } else {
+                if (tempoAtual >= tempoAbre && tempoAtual < tempoFecha) {
+                    aberto = true;
+                }
+            }
+
+            if (aberto) {
+                badgeStatus.className = "inline-block bg-green-500/20 text-green-400 text-xs font-semibold px-3 py-1 rounded-full border border-green-500/30";
+                badgeStatus.innerHTML = '<i class="fa-solid fa-circle text-[9px] mr-1 animate-pulse"></i> Aberto para Pedidos';
+                return true;
+            } else {
+                badgeStatus.className = "inline-block bg-red-500/20 text-red-400 text-xs font-semibold px-3 py-1 rounded-full border border-red-500/30";
+                badgeStatus.innerHTML = '<i class="fa-solid fa-circle text-[9px] mr-1"></i> Fechado no Momento';
+                return false;
+            }
+        }
+
         function aplicarConfig(config) {
             document.getElementById("nomeLoja").innerText = config.nome_loja || "Cardápio Digital";
             document.title = (config.nome_loja || "Cardápio Digital") + " - Cardápio";
@@ -244,6 +284,8 @@
             } else {
                 document.getElementById("badgeDias").style.display = "none";
             }
+
+            verificarStatusFuncionamento(config);
 
             const raiz = document.documentElement.style;
             const prim = config.cor_primaria || "#0f172a";
@@ -299,7 +341,6 @@
                 }
 
                 categorias.forEach(cat => {
-                    // ID dinâmico e padronizado para rastreamento (Ex: cat-combos-e-promocoes)
                     let catId = "cat-" + cat.toLowerCase().replace(/[^a-z0-9]/g, "-");
                     
                     let htmlCat = `<div id="${catId}" class="space-y-3 pt-2"><h2 class="text-sm font-bold cor-primaria-text border-l-4 cor-botao-bg pl-2 uppercase tracking-wide">${cat}</h2><div class="space-y-3">`;
@@ -336,7 +377,6 @@
             }
         }
 
-        // Funções do Modal Surpresa da Promoção Especial
         function checarEExibirPromo() {
             if (configGlobal.promo_ativa === "true" && configGlobal.promo_titulo) {
                 if (configGlobal.promo_foto && configGlobal.promo_foto.trim() !== "") {
@@ -355,9 +395,9 @@
             document.getElementById("modalPromoDia").classList.add("hidden");
         }
 
+        @keyframes pulso { 0% { transform: scale(1); } 40% { transform: scale(1.18); } 100% { transform: scale(1); } }
         function irParaPromo() {
             fecharPromo();
-            // Busca de forma inteligente qualquer bloco de categoria que tenha "combo" ou "promo" no ID
             const elementos = document.querySelectorAll('[id^="cat-"]');
             let elementoAlvo = null;
             elementos.forEach(el => {
@@ -370,7 +410,6 @@
             if (elementoAlvo) {
                 elementoAlvo.scrollIntoView({ behavior: "smooth", block: "start" });
             } else {
-                // Se não achar a categoria específica, rola pro início da lista de produtos
                 document.getElementById("cardapio-container").scrollIntoView({ behavior: "smooth" });
             }
         }
@@ -425,6 +464,7 @@
             return Object.values(carrinho).reduce((a, b) => a + b, 0);
         }
 
+        fn = () => {}
         function atualizarBarraCarrinho() {
             const total = calcularTotal();
             const barra = document.getElementById("barra-carrinho");
@@ -485,6 +525,11 @@
         async function enviarPedido(e) {
             e.preventDefault();
 
+            if (!verificarStatusFuncionamento(configGlobal)) {
+                alert("Desculpe, nosso estabelecimento está fechado no momento. Não é possível enviar pedidos.");
+                return;
+            }
+
             let itensArray = [];
             Object.keys(carrinho).forEach(id => {
                 const prod = produtosGlobais.find(p => p.id === id);
@@ -536,7 +581,7 @@
         window.onload = async function () {
             await carregarConfig();
             await carregarCardapio();
-            checarEExibirPromo(); // Executa o popup após carregar a interface e os produtos
+            checarEExibirPromo();
         };
     </script>
 </body>
