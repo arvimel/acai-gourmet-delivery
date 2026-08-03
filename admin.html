@@ -88,6 +88,11 @@
                             <input type="text" id="cfgSlogan" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500">
                         </div>
                         <div>
+                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1"><i class="fa-brands fa-instagram"></i> Instagram da Loja</label>
+                            <input type="url" id="cfgInstagram" placeholder="https://www.instagram.com/seu_perfil" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500">
+                            <p class="text-[11px] text-gray-400 mt-1">Aparece como um botão com a logo do Instagram no topo do cardápio do cliente.</p>
+                        </div>
+                        <div>
                             <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Logo da Loja</label>
                             <div class="flex items-center gap-3">
                                 <img id="previewLogo" class="hidden w-12 h-12 rounded-full object-cover border border-gray-200" src="">
@@ -584,6 +589,7 @@
 
                 document.getElementById("cfgNome").value = config.nome_loja || "Açaí Gourmet";
                 document.getElementById("cfgSlogan").value = config.slogan || "Pizzaria e Hamburgueria";
+                document.getElementById("cfgInstagram").value = config.instagram_url || "https://www.instagram.com/acaigourmet.pmw/";
                 document.getElementById("cfgLogo").value = config.logo_url || "";
                 document.getElementById("cfgBanner").value = config.banner_url || "";
 
@@ -634,6 +640,7 @@
             const config = {
                 nome_loja: document.getElementById("cfgNome").value,
                 slogan: document.getElementById("cfgSlogan").value,
+                instagram_url: document.getElementById("cfgInstagram").value,
                 logo_url: document.getElementById("cfgLogo").value,
                 banner_url: document.getElementById("cfgBanner").value,
                 horario_abertura: document.getElementById("cfgHorarioAbertura").value,
