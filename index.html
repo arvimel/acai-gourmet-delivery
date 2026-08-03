@@ -66,6 +66,15 @@
                     <i class="fa-regular fa-calendar mr-1"></i><span id="txtDias"></span>
                 </div>
             </div>
+
+            <div class="flex flex-wrap justify-center gap-2 mt-3">
+                <button id="btnCompartilhar" onclick="compartilharCardapio()" class="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-gray-200 text-xs font-medium px-3 py-1.5 rounded-full border border-white/10 transition cursor-pointer">
+                    <i class="fa-solid fa-share-nodes"></i> Compartilhar
+                </button>
+                <a id="linkInstagram" href="https://www.instagram.com/acaigourmet.pmw/" target="_blank" rel="noopener" class="hidden items-center gap-1.5 bg-white/10 hover:bg-white/20 text-gray-200 text-xs font-medium px-3 py-1.5 rounded-full border border-white/10 transition cursor-pointer">
+                    <i class="fa-brands fa-instagram"></i> Instagram
+                </a>
+            </div>
         </div>
     </header>
 
@@ -299,6 +308,15 @@
                 document.getElementById("badgeDias").style.display = "none";
             }
 
+            // Botão do Instagram (usa o link salvo no admin, ou o padrão da loja)
+            const linkInstagram = document.getElementById("linkInstagram");
+            const urlInstagram = (config.instagram_url && config.instagram_url.trim() !== "")
+                ? config.instagram_url.trim()
+                : "https://www.instagram.com/acaigourmet.pmw/";
+            linkInstagram.href = urlInstagram;
+            linkInstagram.classList.remove("hidden");
+            linkInstagram.classList.add("inline-flex");
+
             // Cores do tema (Garante o retorno correto para o padrão de fábrica)
             const raiz = document.documentElement.style;
             const prim = config.cor_primaria || "#0f172a";
@@ -529,6 +547,33 @@
                 abrirCheckout();
             } else {
                 document.getElementById("cardapio-container").scrollIntoView({ behavior: "smooth" });
+            }
+        }
+
+        // Compartilha o link do cardápio. Em celular, abre o menu nativo de
+        // compartilhamento (WhatsApp, Instagram, etc.); no computador, copia o link.
+        async function compartilharCardapio() {
+            const nomeLoja = document.getElementById("nomeLoja").innerText || "Cardápio Digital";
+            const dadosCompartilhamento = {
+                title: nomeLoja,
+                text: `Confira o cardápio de ${nomeLoja}!`,
+                url: window.location.href
+            };
+
+            if (navigator.share) {
+                try {
+                    await navigator.share(dadosCompartilhamento);
+                } catch (erro) {
+                    // usuário cancelou o compartilhamento, não faz nada
+                }
+                return;
+            }
+
+            try {
+                await navigator.clipboard.writeText(window.location.href);
+                alert("Link do cardápio copiado! Agora é só colar onde quiser compartilhar.");
+            } catch (erro) {
+                prompt("Copie o link do cardápio abaixo:", window.location.href);
             }
         }
 
