@@ -7,6 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link id="fonteGoogle" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap">
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
     <style>
         :root {
             --cor-primaria: #0f172a;
@@ -33,6 +34,8 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
         #btnCarrinho.pulso { animation: pulso .5s ease; }
         @keyframes pulso { 0% { transform: scale(1); } 40% { transform: scale(1.18); } 100% { transform: scale(1); } }
+        .spinner { border: 3px solid #e5e7eb; border-top-color: var(--cor-botao); border-radius: 50%; width: 28px; height: 28px; animation: girar 0.8s linear infinite; }
+        @keyframes girar { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 pb-28">
@@ -182,15 +185,83 @@
                     </div>
                 </div>
 
-                <button type="submit" class="w-full cor-botao-bg text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition cursor-pointer text-base mt-4">
+                <button type="submit" id="btnConfirmarPagar" class="w-full cor-botao-bg text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition cursor-pointer text-base mt-4">
                     Confirmar e Pagar
                 </button>
             </form>
         </div>
     </div>
 
+    <!-- Tela de Pagamento (PIX / Cartão) -->
+    <div id="modalPagamento" class="fixed inset-0 bg-black/60 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 overflow-y-auto">
+        <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="p-4 border-b border-gray-100 flex justify-between items-center cor-primaria-bg text-white rounded-t-2xl sm:rounded-t-2xl">
+                <h3 class="font-bold text-lg">Pagamento</h3>
+                <button onclick="fecharModalPagamento()" class="text-gray-400 hover:text-white text-xl p-1 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="p-6 overflow-y-auto flex-1 text-sm">
+
+                <!-- Bloco PIX -->
+                <div id="blocoPix" class="hidden text-center space-y-4">
+                    <div id="pixCarregando" class="flex flex-col items-center gap-3 py-6">
+                        <div class="spinner"></div>
+                        <p class="text-gray-500">Gerando seu QR Code Pix...</p>
+                    </div>
+                    <div id="pixConteudo" class="hidden space-y-4">
+                        <p class="text-gray-500">Escaneie o QR Code no app do seu banco:</p>
+                        <img id="imgQrPix" class="mx-auto w-52 h-52 border border-gray-200 rounded-xl" src="">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-400 mb-1 text-left">Ou copie o código Pix</label>
+                            <div class="flex gap-2">
+                                <input id="copiaCola" readonly class="flex-1 border border-gray-300 rounded-xl p-2.5 text-xs truncate">
+                                <button type="button" onclick="copiarCodigoPix()" class="cor-botao-bg text-white px-3 rounded-xl font-bold text-xs cursor-pointer">Copiar</button>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-center gap-2 text-gray-400 text-xs pt-2">
+                            <div class="spinner" style="width:16px;height:16px;border-width:2px;"></div>
+                            Aguardando confirmação do pagamento...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bloco Cartão -->
+                <div id="blocoCartao" class="hidden space-y-3">
+                    <p class="text-gray-500 mb-2">Preencha os dados do cartão:</p>
+                    <div id="containerCartao"></div>
+                    <p id="statusCartao" class="text-xs text-center text-gray-400"></p>
+                </div>
+
+                <!-- Bloco Sucesso -->
+                <div id="blocoSucesso" class="hidden text-center py-8 space-y-3">
+                    <div class="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto text-3xl">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900">Pagamento aprovado!</h3>
+                    <p class="text-gray-500">Seu pedido já foi enviado para a cozinha. Obrigado!</p>
+                    <button onclick="fecharModalPagamentoSucesso()" class="cor-botao-bg text-white font-bold py-3 px-6 rounded-xl cursor-pointer mt-2">Fechar</button>
+                </div>
+
+                <!-- Bloco Erro -->
+                <div id="blocoErroPagamento" class="hidden text-center py-8 space-y-3">
+                    <div class="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto text-3xl">
+                        <i class="fa-solid fa-xmark"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900">Não foi possível confirmar o pagamento</h3>
+                    <p id="msgErroPagamento" class="text-gray-500 text-xs"></p>
+                    <button onclick="fecharModalPagamento()" class="cor-botao-bg text-white font-bold py-3 px-6 rounded-xl cursor-pointer mt-2">Tentar novamente</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbxOjeW76WQYdksHvgXFTC5BCviwlTeUtg_5EOVgxsN8xPosOafe-gj8WDpPryCYmvDf/exec";
+
+        // Chave pública do Mercado Pago (segura para ficar no frontend)
+        const MP_PUBLIC_KEY = "APP_USR-e89988ba-7d66-4f32-8337-b3b25d92b7fd";
+        const mp = new MercadoPago(MP_PUBLIC_KEY, { locale: "pt-BR" });
 
         const FONTES_DISPONIVEIS = {
             "Poppins": "Poppins:wght@400;500;600;700;800",
@@ -206,6 +277,8 @@
         let produtoDetalheAtual = null;
         let configAtual = {};
         let lojaAberta = true;
+        let pollingPixInterval = null;
+        let cardBrickController = null;
         const DIAS_JS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
         // Calcula se a loja está aberta agora, com base no horário/dias configurados
@@ -611,6 +684,12 @@
             });
         }
 
+        // ==========================================================
+        // FLUXO DE PAGAMENTO (PIX / Cartão via Mercado Pago)
+        // ==========================================================
+
+        let pedidoAtual = null; // guarda os dados do pedido em andamento
+
         async function enviarPedido(e) {
             e.preventDefault();
 
@@ -631,40 +710,209 @@
                 return;
             }
 
-            const payload = {
-                action: "novo_pedido",
+            const formaPagamento = document.querySelector('input[name="pagamento"]:checked').value;
+            const whats = document.getElementById("cliWhats").value;
+            const digitosWhats = whats.replace(/\D/g, "");
+
+            pedidoAtual = {
                 id: "PED_" + Date.now(),
-                cliente: document.getElementById("cliNome").value + " (" + document.getElementById("cliWhats").value + ")",
+                cliente: document.getElementById("cliNome").value + " (" + whats + ")",
                 itens: itensArray.join(", "),
                 total: calcularTotal().toFixed(2),
-                forma_pagamento: document.querySelector('input[name="pagamento"]:checked').value,
+                forma_pagamento: formaPagamento,
                 endereco_digitado: document.getElementById("cliEndereco").value,
                 localizacao_gps: document.getElementById("cliGps").value || "Não enviada",
-                observacoes: document.getElementById("cliObs").value || "Nenhuma"
+                observacoes: document.getElementById("cliObs").value || "Nenhuma",
+                email: `cliente${digitosWhats}@cardapio.com`
             };
 
+            const btn = document.getElementById("btnConfirmarPagar");
+            btn.disabled = true;
+            btn.innerText = "Enviando...";
+
             try {
+                // 1) grava o pedido na planilha (status Pendente)
                 const resposta = await fetch(API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "text/plain" },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({ action: "novo_pedido", status: "Pendente", ...pedidoAtual })
                 });
-
                 const resultado = await resposta.json();
 
-                if (resultado.status === "success") {
-                    alert("Pedido enviado com sucesso!");
-                    fecharCheckout();
-                    carrinho = {};
-                    atualizarBarraCarrinho();
-                    atualizarBadgeCarrinho();
-                    carregarCardapio();
-                } else {
+                if (resultado.status !== "success") {
                     alert("O servidor recusou o pedido: " + (resultado.message || resultado.status));
+                    return;
+                }
+
+                // 2) fecha o checkout e abre a tela de pagamento correta
+                fecharCheckout();
+                if (formaPagamento === "Pix") {
+                    iniciarPagamentoPix();
+                } else {
+                    iniciarPagamentoCartao();
                 }
             } catch (error) {
                 console.error("Erro na requisição:", error);
                 alert("Falha ao salvar o pedido. Verifique a conexão e a URL da API.");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Confirmar e Pagar";
+            }
+        }
+
+        function abrirModalPagamento() {
+            document.getElementById("modalPagamento").classList.remove("hidden");
+        }
+
+        function fecharModalPagamento() {
+            document.getElementById("modalPagamento").classList.add("hidden");
+            document.getElementById("blocoPix").classList.add("hidden");
+            document.getElementById("blocoCartao").classList.add("hidden");
+            document.getElementById("blocoSucesso").classList.add("hidden");
+            document.getElementById("blocoErroPagamento").classList.add("hidden");
+            document.getElementById("pixCarregando").classList.remove("hidden");
+            document.getElementById("pixConteudo").classList.add("hidden");
+            if (pollingPixInterval) { clearInterval(pollingPixInterval); pollingPixInterval = null; }
+        }
+
+        function fecharModalPagamentoSucesso() {
+            fecharModalPagamento();
+        }
+
+        function mostrarErroPagamento(msg) {
+            document.getElementById("blocoPix").classList.add("hidden");
+            document.getElementById("blocoCartao").classList.add("hidden");
+            document.getElementById("blocoErroPagamento").classList.remove("hidden");
+            document.getElementById("msgErroPagamento").innerText = msg || "Tente novamente ou escolha outra forma de pagamento.";
+        }
+
+        function finalizarPedidoComSucesso() {
+            document.getElementById("blocoPix").classList.add("hidden");
+            document.getElementById("blocoCartao").classList.add("hidden");
+            document.getElementById("blocoSucesso").classList.remove("hidden");
+            if (pollingPixInterval) { clearInterval(pollingPixInterval); pollingPixInterval = null; }
+
+            carrinho = {};
+            atualizarBarraCarrinho();
+            atualizarBadgeCarrinho();
+            carregarCardapio();
+        }
+
+        // ---------- PIX ----------
+        async function iniciarPagamentoPix() {
+            abrirModalPagamento();
+            document.getElementById("blocoPix").classList.remove("hidden");
+            document.getElementById("pixCarregando").classList.remove("hidden");
+            document.getElementById("pixConteudo").classList.add("hidden");
+
+            try {
+                const resp = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain" },
+                    body: JSON.stringify({
+                        action: "criar_pix",
+                        valor: pedidoAtual.total,
+                        pedidoId: pedidoAtual.id,
+                        email: pedidoAtual.email
+                    })
+                });
+                const dados = await resp.json();
+
+                if (dados.status !== "success") {
+                    mostrarErroPagamento(dados.message);
+                    return;
+                }
+
+                document.getElementById("imgQrPix").src = "data:image/png;base64," + dados.qr_code_base64;
+                document.getElementById("copiaCola").value = dados.qr_code;
+                document.getElementById("pixCarregando").classList.add("hidden");
+                document.getElementById("pixConteudo").classList.remove("hidden");
+
+                // fica checando a cada 3s se o pagamento já caiu
+                pollingPixInterval = setInterval(() => verificarStatusPix(dados.payment_id), 3000);
+            } catch (erro) {
+                console.error(erro);
+                mostrarErroPagamento("Não foi possível gerar o Pix. Tente novamente.");
+            }
+        }
+
+        async function verificarStatusPix(paymentId) {
+            try {
+                const resp = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain" },
+                    body: JSON.stringify({ action: "consultar_status_pix", paymentId })
+                });
+                const dados = await resp.json();
+
+                if (dados.status === "approved") {
+                    finalizarPedidoComSucesso();
+                }
+            } catch (erro) {
+                console.warn("Erro ao consultar status do Pix:", erro);
+            }
+        }
+
+        function copiarCodigoPix() {
+            const campo = document.getElementById("copiaCola");
+            campo.select();
+            navigator.clipboard.writeText(campo.value).then(() => {
+                alert("Código Pix copiado!");
+            }).catch(() => {
+                document.execCommand("copy");
+            });
+        }
+
+        // ---------- CARTÃO ----------
+        async function iniciarPagamentoCartao() {
+            abrirModalPagamento();
+            document.getElementById("blocoCartao").classList.remove("hidden");
+            document.getElementById("containerCartao").innerHTML = "";
+            document.getElementById("statusCartao").innerText = "";
+
+            try {
+                const bricksBuilder = mp.bricks();
+                cardBrickController = await bricksBuilder.create("cardPayment", "containerCartao", {
+                    initialization: { amount: Number(pedidoAtual.total) },
+                    callbacks: {
+                        onReady: () => {},
+                        onSubmit: (cardFormData) => {
+                            return processarPagamentoCartao(cardFormData);
+                        },
+                        onError: (erro) => {
+                            console.error(erro);
+                            document.getElementById("statusCartao").innerText = "Erro ao carregar formulário do cartão.";
+                        }
+                    }
+                });
+            } catch (erro) {
+                console.error(erro);
+                mostrarErroPagamento("Não foi possível carregar o formulário de cartão.");
+            }
+        }
+
+        async function processarPagamentoCartao(cardFormData) {
+            document.getElementById("statusCartao").innerText = "Processando pagamento...";
+            try {
+                const resp = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain" },
+                    body: JSON.stringify({
+                        action: "pagar_cartao",
+                        pedidoId: pedidoAtual.id,
+                        ...cardFormData
+                    })
+                });
+                const resultado = await resp.json();
+
+                if (resultado.status === "approved") {
+                    finalizarPedidoComSucesso();
+                } else {
+                    mostrarErroPagamento(resultado.status_detail || "Pagamento recusado. Verifique os dados do cartão.");
+                }
+            } catch (erro) {
+                console.error(erro);
+                mostrarErroPagamento("Falha ao processar o pagamento. Tente novamente.");
             }
         }
 
