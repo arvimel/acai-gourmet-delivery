@@ -211,6 +211,11 @@
         // Calcula se a loja está aberta agora, com base no horário/dias configurados
         // no admin e no botão de "fechar loja agora" (fechamento manual).
         function calcularStatusLoja(config) {
+            // Forçar Abertura tem prioridade máxima: mantém a loja aberta mesmo
+            // fora do horário configurado (ex: dia especial, feriado, plantão).
+            if (config.loja_aberta_manual === "true") {
+                return { aberto: true };
+            }
             if (config.loja_fechada_manual === "true") {
                 return { aberto: false };
             }
