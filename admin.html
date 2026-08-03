@@ -149,6 +149,20 @@
                             <div class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"></div>
                         </label>
                     </div>
+
+                    <div class="mt-3 flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-3 gap-4">
+                        <div>
+                            <p class="text-sm font-semibold text-green-700">Forçar Abertura (manter pedidos ativos)</p>
+                            <p class="text-xs text-green-600">Use quando quiser continuar recebendo pedidos mesmo fora do horário configurado (ex: um dia especial, feriado ou plantão). Enquanto estiver ativo, o cardápio fica marcado como aberto mesmo fora do horário.</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                            <input type="checkbox" id="cfgAbrirManual" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-green-500 transition-colors"></div>
+                            <div class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"></div>
+                        </label>
+                    </div>
+
+                    <p class="text-[11px] text-gray-400 mt-3"><i class="fa-solid fa-circle-info mr-1"></i>Os dois botões acima são exclusivos: ativar um desativa o outro automaticamente, para nunca ficarem em conflito.</p>
                 </section>
 
                 <!-- Cores do Tema -->
@@ -606,6 +620,7 @@
                 document.getElementById("cfgHorarioAbertura").value = config.horario_abertura || "18:00";
                 document.getElementById("cfgHorarioFechamento").value = config.horario_fechamento || "23:00";
                 document.getElementById("cfgFecharManual").checked = config.loja_fechada_manual === "true";
+                document.getElementById("cfgAbrirManual").checked = config.loja_aberta_manual === "true";
 
                 diasSelecionados = new Set((config.dias_funcionamento || "Seg,Ter,Qua,Qui,Sex,Sáb").split(",").map(d => d.trim()).filter(Boolean));
                 montarBotoesDias();
@@ -646,6 +661,7 @@
                 horario_abertura: document.getElementById("cfgHorarioAbertura").value,
                 horario_fechamento: document.getElementById("cfgHorarioFechamento").value,
                 loja_fechada_manual: document.getElementById("cfgFecharManual").checked ? "true" : "false",
+                loja_aberta_manual: document.getElementById("cfgAbrirManual").checked ? "true" : "false",
                 dias_funcionamento: Array.from(diasSelecionados).join(","),
                 cor_primaria: document.getElementById("cfgCorPrimariaTxt").value,
                 cor_botao: document.getElementById("cfgCorBotaoTxt").value,
@@ -697,6 +713,19 @@
 
         document.getElementById("cfgTamanhoFonte").addEventListener("input", (e) => {
             document.getElementById("cfgTamanhoFonteValor").innerText = e.target.value;
+        });
+
+        // Torna os toggles "Fechar a loja agora" e "Forçar Abertura" mutuamente exclusivos:
+        // ativar um sempre desativa o outro, para nunca haver conflito de status.
+        document.getElementById("cfgFecharManual").addEventListener("change", function () {
+            if (this.checked) {
+                document.getElementById("cfgAbrirManual").checked = false;
+            }
+        });
+        document.getElementById("cfgAbrirManual").addEventListener("change", function () {
+            if (this.checked) {
+                document.getElementById("cfgFecharManual").checked = false;
+            }
         });
 
         sincronizarCorTexto("cfgCorPrimaria", "cfgCorPrimariaTxt");
