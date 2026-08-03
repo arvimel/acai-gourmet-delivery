@@ -22,6 +22,15 @@
                 <a href="#" onclick="mudarAba('personalizacao'); return false;" id="navPersonalizacao" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-800 rounded-lg text-gray-300 hover:text-white transition">
                     <i class="fa-solid fa-palette w-5"></i> Personalização
                 </a>
+                <a href="#" onclick="mudarAba('clientes'); return false;" id="navClientes" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-800 rounded-lg text-gray-300 hover:text-white transition">
+                    <i class="fa-solid fa-address-book w-5"></i> Clientes
+                </a>
+                <a href="#" onclick="mudarAba('relatorios'); return false;" id="navRelatorios" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-800 rounded-lg text-gray-300 hover:text-white transition">
+                    <i class="fa-solid fa-chart-line w-5"></i> Relatórios
+                </a>
+                <a href="#" onclick="mudarAba('backup'); return false;" id="navBackup" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-800 rounded-lg text-gray-300 hover:text-white transition">
+                    <i class="fa-solid fa-shield-halved w-5"></i> Backup
+                </a>
             </nav>
         </div>
         <div class="p-5 border-t border-slate-800 text-xs text-gray-500">
@@ -88,11 +97,6 @@
                             <input type="text" id="cfgSlogan" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1"><i class="fa-brands fa-instagram"></i> Instagram da Loja</label>
-                            <input type="url" id="cfgInstagram" placeholder="https://www.instagram.com/seu_perfil" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500">
-                            <p class="text-[11px] text-gray-400 mt-1">Aparece como um botão com a logo do Instagram no topo do cardápio do cliente.</p>
-                        </div>
-                        <div>
                             <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Logo da Loja</label>
                             <div class="flex items-center gap-3">
                                 <img id="previewLogo" class="hidden w-12 h-12 rounded-full object-cover border border-gray-200" src="">
@@ -136,33 +140,17 @@
                         <label class="block text-xs font-semibold uppercase text-gray-500 mb-2">Dias de Funcionamento</label>
                         <div id="cfgDias" class="flex flex-wrap gap-2"></div>
                     </div>
-                    <p class="text-[11px] text-gray-400 mt-3">O cardápio verifica automaticamente a hora do fechamento configurada aqui e passa a exibir "Fechado" para os clientes assim que o horário virar, sem precisar deixar produtos como indisponíveis.</p>
-
-                    <div class="mt-4 flex items-center justify-between bg-red-50 border border-red-200 rounded-lg p-3 gap-4">
-                        <div>
-                            <p class="text-sm font-semibold text-red-700">Fechar a loja agora (pausar pedidos)</p>
-                            <p class="text-xs text-red-500">Use quando quiser encerrar os pedidos antes do horário normal. Enquanto estiver ativo, o cardápio fica marcado como fechado mesmo dentro do horário configurado.</p>
+                    <div class="mt-4 flex items-center justify-between bg-red-50 border border-red-100 rounded-lg p-3">
+                        <div class="pr-4">
+                            <p class="text-sm font-semibold text-red-700">Fechar a loja agora</p>
+                            <p class="text-xs text-red-500">Ative quando quiser fechar mais cedo, ignorando o horário automático acima. O cardápio mostra "Fechado" e não aceita pedidos enquanto isso estiver ligado. Desative para voltar ao horário normal.</p>
                         </div>
                         <label class="relative inline-flex items-center cursor-pointer shrink-0">
-                            <input type="checkbox" id="cfgFecharManual" class="sr-only peer">
-                            <div class="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-red-500 transition-colors"></div>
-                            <div class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"></div>
+                            <input type="checkbox" id="cfgFechadoManual" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-300 peer-checked:bg-red-500 rounded-full transition-colors"></div>
+                            <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
                         </label>
                     </div>
-
-                    <div class="mt-3 flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-3 gap-4">
-                        <div>
-                            <p class="text-sm font-semibold text-green-700">Forçar Abertura (manter pedidos ativos)</p>
-                            <p class="text-xs text-green-600">Use quando quiser continuar recebendo pedidos mesmo fora do horário configurado (ex: um dia especial, feriado ou plantão). Enquanto estiver ativo, o cardápio fica marcado como aberto mesmo fora do horário.</p>
-                        </div>
-                        <label class="relative inline-flex items-center cursor-pointer shrink-0">
-                            <input type="checkbox" id="cfgAbrirManual" class="sr-only peer">
-                            <div class="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-green-500 transition-colors"></div>
-                            <div class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"></div>
-                        </label>
-                    </div>
-
-                    <p class="text-[11px] text-gray-400 mt-3"><i class="fa-solid fa-circle-info mr-1"></i>Os dois botões acima são exclusivos: ativar um desativa o outro automaticamente, para nunca ficarem em conflito.</p>
                 </section>
 
                 <!-- Cores do Tema -->
@@ -235,12 +223,116 @@
                 </div>
             </main>
         </div>
+
+        <!-- ==================== ABA CLIENTES ==================== -->
+        <div id="abaClientes" class="hidden">
+            <header class="bg-white shadow px-8 py-4 flex justify-between items-center">
+                <h1 class="text-xl font-semibold text-gray-800">Clientes</h1>
+                <button onclick="carregarClientes()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-medium shadow flex items-center gap-2 transition cursor-pointer">
+                    <i class="fa-solid fa-rotate"></i> Atualizar
+                </button>
+            </header>
+            <main class="p-8 max-w-6xl w-full mx-auto">
+                <p class="text-xs text-gray-400 mb-4">Montado automaticamente a partir do histórico de pedidos (aba "Pedidos" da planilha). Identifica cada cliente pelo WhatsApp informado no pedido.</p>
+                <div class="flex flex-col sm:flex-row gap-3 mb-4">
+                    <input type="text" id="buscaCliente" placeholder="Buscar por nome, WhatsApp ou endereço..." class="flex-1 border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500" oninput="renderizarClientes()">
+                    <select id="ordenarClientes" onchange="renderizarClientes()" class="border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500">
+                        <option value="pedidos">Ordenar: mais pedidos</option>
+                        <option value="gasto">Ordenar: maior valor gasto</option>
+                    </select>
+                </div>
+                <div id="msgClientesVazio" class="hidden text-center text-gray-400 py-12">Nenhum pedido registrado ainda.</div>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 border-b border-gray-200 text-gray-600 text-sm font-semibold uppercase">
+                                <th class="p-4">Cliente</th>
+                                <th class="p-4">WhatsApp</th>
+                                <th class="p-4">Endereço</th>
+                                <th class="p-4">Pedidos</th>
+                                <th class="p-4">Total Gasto</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-clientes" class="divide-y divide-gray-100 text-gray-700 text-sm"></tbody>
+                    </table>
+                </div>
+            </main>
+        </div>
+
+        <!-- ==================== ABA RELATÓRIOS ==================== -->
+        <div id="abaRelatorios" class="hidden">
+            <header class="bg-white shadow px-8 py-4 flex justify-between items-center">
+                <h1 class="text-xl font-semibold text-gray-800">Relatórios e Métricas</h1>
+                <button onclick="carregarRelatorios()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-medium shadow flex items-center gap-2 transition cursor-pointer">
+                    <i class="fa-solid fa-rotate"></i> Atualizar
+                </button>
+            </header>
+            <main class="p-8 max-w-6xl w-full mx-auto space-y-6">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                        <p class="text-xs text-gray-400 uppercase font-semibold">Pedidos</p>
+                        <p id="metricaPedidos" class="text-2xl font-bold text-gray-900 mt-1">0</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                        <p class="text-xs text-gray-400 uppercase font-semibold">Faturamento</p>
+                        <p id="metricaFaturamento" class="text-2xl font-bold text-gray-900 mt-1">R$ 0,00</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                        <p class="text-xs text-gray-400 uppercase font-semibold">Ticket Médio</p>
+                        <p id="metricaTicket" class="text-2xl font-bold text-gray-900 mt-1">R$ 0,00</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                        <p class="text-xs text-gray-400 uppercase font-semibold">Clientes Únicos</p>
+                        <p id="metricaClientes" class="text-2xl font-bold text-gray-900 mt-1">0</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <h2 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-trophy text-amber-500"></i> Produtos mais vendidos</h2>
+                        <div id="rankingProdutos" class="space-y-2 text-sm"></div>
+                    </section>
+                    <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <h2 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-credit-card text-amber-500"></i> Formas de pagamento</h2>
+                        <div id="rankingPagamento" class="space-y-2 text-sm"></div>
+                    </section>
+                </div>
+            </main>
+        </div>
+
+        <!-- ==================== ABA BACKUP ==================== -->
+        <div id="abaBackup" class="hidden">
+            <header class="bg-white shadow px-8 py-4 flex justify-between items-center">
+                <h1 class="text-xl font-semibold text-gray-800">Backup e Segurança</h1>
+            </header>
+            <main class="p-8 max-w-3xl w-full mx-auto space-y-6">
+                <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h2 class="font-bold text-gray-800 mb-2 flex items-center gap-2"><i class="fa-solid fa-download text-amber-500"></i> Baixar backup completo</h2>
+                    <p class="text-sm text-gray-500 mb-4">Gera um arquivo com todos os produtos, configurações do cardápio e histórico de pedidos. Guarde esse arquivo em local seguro — recomendado baixar periodicamente.</p>
+                    <button onclick="baixarBackup()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-medium shadow flex items-center gap-2 transition cursor-pointer">
+                        <i class="fa-solid fa-download"></i> Baixar backup (.json)
+                    </button>
+                    <p id="statusBackup" class="text-xs mt-2"></p>
+                </section>
+
+                <section class="bg-white rounded-xl shadow-sm border border-red-200 p-6">
+                    <h2 class="font-bold text-red-700 mb-2 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Restaurar backup</h2>
+                    <p class="text-sm text-gray-500 mb-4">Restaura os <strong>produtos</strong> e a <strong>personalização</strong> a partir de um arquivo de backup baixado anteriormente. Isso substitui os dados atuais dessas duas áreas — o histórico de pedidos não é afetado. Use com cuidado.</p>
+                    <input type="file" id="arquivoRestaurar" accept="application/json" class="hidden" onchange="restaurarBackup(event)">
+                    <button onclick="document.getElementById('arquivoRestaurar').click()" class="border border-red-300 text-red-700 hover:bg-red-50 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition cursor-pointer">
+                        <i class="fa-solid fa-upload"></i> Selecionar arquivo de backup
+                    </button>
+                    <p id="statusRestaurar" class="text-xs mt-2"></p>
+                </section>
+            </main>
+        </div>
     </div>
 
     <!-- Modal Formulário (Adicionar/Editar Produto) -->
     <div id="modalProduto" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-xl shadow-lg max-w-md w-full overflow-hidden">
             <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
+
                 <h3 id="modalTitulo" class="font-bold">Novo Produto</h3>
                 <button onclick="fecharModal()" class="text-gray-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
             </div>
@@ -262,14 +354,13 @@
                     <div>
                         <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Categoria</label>
                         <select id="prodCategoria" class="w-full border border-gray-300 rounded-lg p-2 focus:outline-amber-500 text-sm">
-                            <option value="Promoção">Promoção</option>
-                            <option value="Combo">Combo</option>
                             <option value="Hambúrgueres">Hambúrgueres</option>
                             <option value="Pizzas">Pizzas</option>
                             <option value="Açaí">Açaí</option>
                             <option value="Bebidas">Bebidas</option>
+                            <option value="Promoção">Promoção</option>
+                            <option value="Combo">Combo</option>
                         </select>
-                        <p class="text-[11px] text-gray-400 mt-1">Itens da categoria <b>Promoção</b> aparecem automaticamente em destaque (modal) quando o cliente abre o cardápio.</p>
                     </div>
                 </div>
                 <div>
@@ -377,27 +468,31 @@
         }
 
         // ============ NAVEGAÇÃO ENTRE ABAS ============
-        function mudarAba(aba) {
-            const abaProdutos = document.getElementById("abaProdutos");
-            const abaPersonalizacao = document.getElementById("abaPersonalizacao");
-            const navProdutos = document.getElementById("navProdutos");
-            const navPersonalizacao = document.getElementById("navPersonalizacao");
+        const LISTA_ABAS = ["produtos", "personalizacao", "clientes", "relatorios", "backup"];
 
-            if (aba === "produtos") {
-                abaProdutos.classList.remove("hidden");
-                abaPersonalizacao.classList.add("hidden");
-                navProdutos.classList.add("bg-slate-800", "text-white");
-                navProdutos.classList.remove("text-gray-300");
-                navPersonalizacao.classList.remove("bg-slate-800", "text-white");
-                navPersonalizacao.classList.add("text-gray-300");
-            } else {
-                abaPersonalizacao.classList.remove("hidden");
-                abaProdutos.classList.add("hidden");
-                navPersonalizacao.classList.add("bg-slate-800", "text-white");
-                navPersonalizacao.classList.remove("text-gray-300");
-                navProdutos.classList.remove("bg-slate-800", "text-white");
-                navProdutos.classList.add("text-gray-300");
-            }
+        function capitalizarAba(aba) {
+            return aba.charAt(0).toUpperCase() + aba.slice(1);
+        }
+
+        function mudarAba(aba) {
+            LISTA_ABAS.forEach(a => {
+                const painel = document.getElementById("aba" + capitalizarAba(a));
+                const nav = document.getElementById("nav" + capitalizarAba(a));
+                if (!painel || !nav) return;
+
+                if (a === aba) {
+                    painel.classList.remove("hidden");
+                    nav.classList.add("bg-slate-800", "text-white");
+                    nav.classList.remove("text-gray-300");
+                } else {
+                    painel.classList.add("hidden");
+                    nav.classList.remove("bg-slate-800", "text-white");
+                    nav.classList.add("text-gray-300");
+                }
+            });
+
+            if (aba === "clientes") carregarClientes();
+            if (aba === "relatorios") carregarRelatorios();
         }
 
         // ============ PRODUTOS ============
@@ -603,7 +698,6 @@
 
                 document.getElementById("cfgNome").value = config.nome_loja || "Açaí Gourmet";
                 document.getElementById("cfgSlogan").value = config.slogan || "Pizzaria e Hamburgueria";
-                document.getElementById("cfgInstagram").value = config.instagram_url || "https://www.instagram.com/acaigourmet.pmw/";
                 document.getElementById("cfgLogo").value = config.logo_url || "";
                 document.getElementById("cfgBanner").value = config.banner_url || "";
 
@@ -619,8 +713,6 @@
                 }
                 document.getElementById("cfgHorarioAbertura").value = config.horario_abertura || "18:00";
                 document.getElementById("cfgHorarioFechamento").value = config.horario_fechamento || "23:00";
-                document.getElementById("cfgFecharManual").checked = config.loja_fechada_manual === "true";
-                document.getElementById("cfgAbrirManual").checked = config.loja_aberta_manual === "true";
 
                 diasSelecionados = new Set((config.dias_funcionamento || "Seg,Ter,Qua,Qui,Sex,Sáb").split(",").map(d => d.trim()).filter(Boolean));
                 montarBotoesDias();
@@ -644,6 +736,7 @@
                 document.getElementById("cfgExibirBanner").checked = config.exibir_banner !== "false";
                 document.getElementById("cfgExibirHorario").checked = config.exibir_horario !== "false";
                 document.getElementById("cfgExibirDias").checked = config.exibir_dias !== "false";
+                document.getElementById("cfgFechadoManual").checked = config.fechado_manualmente === "true";
             } catch (e) {
                 console.error("Erro ao carregar configurações:", e);
                 diasSelecionados = new Set(["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]);
@@ -655,13 +748,10 @@
             const config = {
                 nome_loja: document.getElementById("cfgNome").value,
                 slogan: document.getElementById("cfgSlogan").value,
-                instagram_url: document.getElementById("cfgInstagram").value,
                 logo_url: document.getElementById("cfgLogo").value,
                 banner_url: document.getElementById("cfgBanner").value,
                 horario_abertura: document.getElementById("cfgHorarioAbertura").value,
                 horario_fechamento: document.getElementById("cfgHorarioFechamento").value,
-                loja_fechada_manual: document.getElementById("cfgFecharManual").checked ? "true" : "false",
-                loja_aberta_manual: document.getElementById("cfgAbrirManual").checked ? "true" : "false",
                 dias_funcionamento: Array.from(diasSelecionados).join(","),
                 cor_primaria: document.getElementById("cfgCorPrimariaTxt").value,
                 cor_botao: document.getElementById("cfgCorBotaoTxt").value,
@@ -672,7 +762,8 @@
                 exibir_slogan: document.getElementById("cfgExibirSlogan").checked ? "true" : "false",
                 exibir_banner: document.getElementById("cfgExibirBanner").checked ? "true" : "false",
                 exibir_horario: document.getElementById("cfgExibirHorario").checked ? "true" : "false",
-                exibir_dias: document.getElementById("cfgExibirDias").checked ? "true" : "false"
+                exibir_dias: document.getElementById("cfgExibirDias").checked ? "true" : "false",
+                fechado_manualmente: document.getElementById("cfgFechadoManual").checked ? "true" : "false"
             };
 
             const msgOk = document.getElementById("msgConfigOk");
@@ -715,22 +806,234 @@
             document.getElementById("cfgTamanhoFonteValor").innerText = e.target.value;
         });
 
-        // Torna os toggles "Fechar a loja agora" e "Forçar Abertura" mutuamente exclusivos:
-        // ativar um sempre desativa o outro, para nunca haver conflito de status.
-        document.getElementById("cfgFecharManual").addEventListener("change", function () {
-            if (this.checked) {
-                document.getElementById("cfgAbrirManual").checked = false;
-            }
-        });
-        document.getElementById("cfgAbrirManual").addEventListener("change", function () {
-            if (this.checked) {
-                document.getElementById("cfgFecharManual").checked = false;
-            }
-        });
-
         sincronizarCorTexto("cfgCorPrimaria", "cfgCorPrimariaTxt");
         sincronizarCorTexto("cfgCorBotao", "cfgCorBotaoTxt");
         sincronizarCorTexto("cfgCorDestaque", "cfgCorDestaqueTxt");
+
+        // ============ CLIENTES (montado a partir do histórico de Pedidos) ============
+        let clientesGlobais = [];
+
+        function extrairWhatsapp(clienteTexto) {
+            const m = (clienteTexto || "").toString().match(/\(([^)]+)\)/);
+            return m ? m[1].trim() : "Não informado";
+        }
+
+        function extrairNome(clienteTexto) {
+            return (clienteTexto || "").toString().replace(/\s*\([^)]*\)\s*/, "").trim() || "Cliente";
+        }
+
+        async function carregarClientes() {
+            try {
+                const resp = await fetch(`${API_URL}?sheet=Pedidos&_t=${Date.now()}`);
+                const pedidos = await resp.json();
+
+                if (!Array.isArray(pedidos)) {
+                    clientesGlobais = [];
+                    renderizarClientes();
+                    return;
+                }
+
+                const mapa = {};
+                pedidos.forEach(p => {
+                    const whats = extrairWhatsapp(p.cliente);
+                    const nome = extrairNome(p.cliente);
+                    const endereco = p["endereço"] || p.endereco || "";
+                    const chave = whats !== "Não informado" ? whats : (nome + "|" + endereco);
+
+                    if (!mapa[chave]) {
+                        mapa[chave] = { nome, whatsapp: whats, endereco, pedidos: 0, totalGasto: 0 };
+                    }
+
+                    mapa[chave].pedidos += 1;
+                    mapa[chave].totalGasto += parseFloat(p.total) || 0;
+                    if (endereco) mapa[chave].endereco = endereco;
+                });
+
+                clientesGlobais = Object.values(mapa);
+                renderizarClientes();
+            } catch (e) {
+                console.error("Erro ao carregar clientes:", e);
+            }
+        }
+
+        function renderizarClientes() {
+            const busca = (document.getElementById("buscaCliente").value || "").toLowerCase();
+            const ordenar = document.getElementById("ordenarClientes").value;
+
+            let lista = clientesGlobais.filter(c =>
+                c.nome.toLowerCase().includes(busca) ||
+                c.whatsapp.toLowerCase().includes(busca) ||
+                c.endereco.toLowerCase().includes(busca)
+            );
+
+            lista.sort((a, b) => ordenar === "gasto" ? b.totalGasto - a.totalGasto : b.pedidos - a.pedidos);
+
+            const tabela = document.getElementById("tabela-clientes");
+            const msgVazio = document.getElementById("msgClientesVazio");
+
+            if (lista.length === 0) {
+                tabela.innerHTML = "";
+                msgVazio.classList.remove("hidden");
+                return;
+            }
+            msgVazio.classList.add("hidden");
+
+            tabela.innerHTML = lista.map(c => `
+                <tr class="hover:bg-gray-50 border-b border-gray-100 transition">
+                    <td class="p-4 font-medium text-gray-900">${c.nome}</td>
+                    <td class="p-4">${c.whatsapp}</td>
+                    <td class="p-4 text-xs text-gray-500 max-w-xs truncate">${c.endereco || "-"}</td>
+                    <td class="p-4"><span class="bg-amber-50 text-amber-700 px-2 py-0.5 rounded text-xs font-semibold">${c.pedidos}</span></td>
+                    <td class="p-4 font-semibold text-gray-900">R$ ${c.totalGasto.toFixed(2)}</td>
+                </tr>
+            `).join("");
+        }
+
+        // ============ RELATÓRIOS (montado a partir do histórico de Pedidos) ============
+        async function carregarRelatorios() {
+            try {
+                const resp = await fetch(`${API_URL}?sheet=Pedidos&_t=${Date.now()}`);
+                let pedidos = await resp.json();
+                if (!Array.isArray(pedidos)) pedidos = [];
+
+                const totalPedidos = pedidos.length;
+                const faturamento = pedidos.reduce((soma, p) => soma + (parseFloat(p.total) || 0), 0);
+                const ticketMedio = totalPedidos > 0 ? faturamento / totalPedidos : 0;
+                const clientesUnicos = new Set(pedidos.map(p => extrairWhatsapp(p.cliente))).size;
+
+                document.getElementById("metricaPedidos").innerText = totalPedidos;
+                document.getElementById("metricaFaturamento").innerText = "R$ " + faturamento.toFixed(2);
+                document.getElementById("metricaTicket").innerText = "R$ " + ticketMedio.toFixed(2);
+                document.getElementById("metricaClientes").innerText = clientesUnicos;
+
+                const contagemProdutos = {};
+                pedidos.forEach(p => {
+                    (p.itens || "").toString().split(",").forEach(item => {
+                        const m = item.trim().match(/^(\d+)x\s+(.+)$/i);
+                        if (m) {
+                            const nome = m[2].trim();
+                            contagemProdutos[nome] = (contagemProdutos[nome] || 0) + parseInt(m[1]);
+                        }
+                    });
+                });
+                const rankingProdutos = Object.entries(contagemProdutos).sort((a, b) => b[1] - a[1]).slice(0, 8);
+                document.getElementById("rankingProdutos").innerHTML = rankingProdutos.length === 0
+                    ? '<p class="text-gray-400 text-sm">Sem dados ainda.</p>'
+                    : rankingProdutos.map(([nome, qtd], i) => `
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700">${i + 1}. ${nome}</span>
+                            <span class="font-semibold text-amber-600">${qtd}x</span>
+                        </div>
+                    `).join("");
+
+                const contagemPagamento = {};
+                pedidos.forEach(p => {
+                    const forma = p["forma pagamento"] || "Não informado";
+                    contagemPagamento[forma] = (contagemPagamento[forma] || 0) + 1;
+                });
+                const rankingPagamento = Object.entries(contagemPagamento).sort((a, b) => b[1] - a[1]);
+                document.getElementById("rankingPagamento").innerHTML = rankingPagamento.length === 0
+                    ? '<p class="text-gray-400 text-sm">Sem dados ainda.</p>'
+                    : rankingPagamento.map(([forma, qtd]) => `
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700">${forma}</span>
+                            <span class="font-semibold text-amber-600">${qtd}</span>
+                        </div>
+                    `).join("");
+            } catch (e) {
+                console.error("Erro ao carregar relatórios:", e);
+            }
+        }
+
+        // ============ BACKUP ============
+        async function baixarBackup() {
+            const status = document.getElementById("statusBackup");
+            status.className = "text-xs mt-2 text-gray-500";
+            status.innerText = "Gerando backup...";
+
+            try {
+                const [produtosResp, configResp, pedidosResp] = await Promise.all([
+                    fetch(`${API_URL}?sheet=Produtos&_t=${Date.now()}`),
+                    fetch(`${API_URL}?sheet=Config&_t=${Date.now()}`),
+                    fetch(`${API_URL}?sheet=Pedidos&_t=${Date.now()}`)
+                ]);
+
+                const backup = {
+                    geradoEm: new Date().toISOString(),
+                    produtos: await produtosResp.json(),
+                    config: await configResp.json(),
+                    pedidos: await pedidosResp.json()
+                };
+
+                const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `backup_cardapio_${new Date().toISOString().slice(0, 10)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+
+                status.className = "text-xs mt-2 text-green-600";
+                status.innerText = "Backup baixado com sucesso!";
+            } catch (e) {
+                console.error("Erro ao gerar backup:", e);
+                status.className = "text-xs mt-2 text-red-600";
+                status.innerText = "Falha ao gerar backup: " + e.message;
+            }
+        }
+
+        async function restaurarBackup(event) {
+            const arquivo = event.target.files[0];
+            if (!arquivo) return;
+
+            const status = document.getElementById("statusRestaurar");
+
+            if (!confirm("Isso vai SUBSTITUIR os produtos e as configurações atuais pelos dados do arquivo. O histórico de pedidos não será alterado. Deseja continuar?")) {
+                event.target.value = "";
+                return;
+            }
+
+            status.className = "text-xs mt-2 text-gray-500";
+            status.innerText = "Restaurando backup...";
+
+            try {
+                const texto = await arquivo.text();
+                const backup = JSON.parse(texto);
+
+                if (!backup.produtos || !Array.isArray(backup.produtos)) {
+                    throw new Error("Arquivo de backup inválido ou corrompido.");
+                }
+
+                const resposta = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain" },
+                    body: JSON.stringify({
+                        token: TOKEN,
+                        action: "restaurar_backup",
+                        produtos: backup.produtos,
+                        config: backup.config || []
+                    })
+                });
+
+                const resultado = await resposta.json();
+                if (resultado.status !== "success") {
+                    throw new Error(resultado.message || "O servidor recusou a restauração.");
+                }
+
+                status.className = "text-xs mt-2 text-green-600";
+                status.innerText = "Backup restaurado com sucesso!";
+                carregarProdutos();
+                carregarConfig();
+            } catch (e) {
+                console.error("Erro ao restaurar backup:", e);
+                status.className = "text-xs mt-2 text-red-600";
+                status.innerText = "Falha ao restaurar: " + e.message;
+            } finally {
+                event.target.value = "";
+            }
+        }
 
         window.onload = function () {
             carregarProdutos();
