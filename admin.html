@@ -3,1042 +3,760 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Admin - Cardápio</title>
+    <title>Painel Administrativo Pro - Cardápio Digital</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-gray-100 font-sans flex h-screen overflow-hidden">
+<body class="bg-gray-100 font-sans h-screen overflow-hidden">
 
-    <!-- Barra Lateral -->
-    <div class="w-64 bg-slate-900 text-white flex flex-col justify-between shrink-0">
-        <div class="p-5">
-            <h2 class="text-xl font-bold tracking-wider text-amber-500 flex items-center gap-2">
-                <i class="fa-solid fa-burger"></i> Admin Pro
-            </h2>
-            <nav class="mt-10 space-y-2">
-                <a href="#" onclick="mudarAba('produtos'); return false;" id="navProdutos" class="flex items-center gap-3 px-4 py-3 bg-slate-800 rounded-lg text-white transition">
-                    <i class="fa-solid fa-utensils w-5"></i> Cardápio / Produtos
-                </a>
-                <a href="#" onclick="mudarAba('personalizacao'); return false;" id="navPersonalizacao" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-800 rounded-lg text-gray-300 hover:text-white transition">
-                    <i class="fa-solid fa-palette w-5"></i> Personalização
-                </a>
-                <a href="#" onclick="mudarAba('clientes'); return false;" id="navClientes" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-800 rounded-lg text-gray-300 hover:text-white transition">
-                    <i class="fa-solid fa-address-book w-5"></i> Clientes
-                </a>
-                <a href="#" onclick="mudarAba('relatorios'); return false;" id="navRelatorios" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-800 rounded-lg text-gray-300 hover:text-white transition">
-                    <i class="fa-solid fa-chart-line w-5"></i> Relatórios
-                </a>
-                <a href="#" onclick="mudarAba('backup'); return false;" id="navBackup" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-800 rounded-lg text-gray-300 hover:text-white transition">
-                    <i class="fa-solid fa-shield-halved w-5"></i> Backup
-                </a>
-            </nav>
-        </div>
-        <div class="p-5 border-t border-slate-800 text-xs text-gray-500">
-            v2.0 - Painel de Gestão
-        </div>
-    </div>
-
-    <!-- Conteúdo Principal -->
-    <div class="flex-1 flex flex-col overflow-y-auto">
-
-        <!-- ==================== ABA PRODUTOS ==================== -->
-        <div id="abaProdutos">
-            <header class="bg-white shadow px-8 py-4 flex justify-between items-center">
-                <h1 class="text-xl font-semibold text-gray-800">Gestão do Cardápio</h1>
-                <button onclick="abrirModal()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-medium shadow flex items-center gap-2 transition cursor-pointer">
-                    <i class="fa-solid fa-plus"></i> Novo Item
-                </button>
-            </header>
-
-            <main class="p-8 max-w-7xl w-full mx-auto">
-                <div id="msgErro" class="hidden bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-4"></div>
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-gray-50 border-b border-gray-200 text-gray-600 text-sm font-semibold uppercase">
-                                <th class="p-4">Foto</th>
-                                <th class="p-4">Item</th>
-                                <th class="p-4">Categoria</th>
-                                <th class="p-4">Preço</th>
-                                <th class="p-4">Status</th>
-                                <th class="p-4 text-right">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabela-produtos" class="divide-y divide-gray-100 text-gray-700 text-sm">
-                        </tbody>
-                    </table>
+    <div id="telaLogin" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-8">
+            <div class="text-center mb-6">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-amber-100 text-amber-600 rounded-full mb-3 text-2xl">
+                    <i class="fa-solid fa-shield-halved"></i>
                 </div>
-            </main>
-        </div>
-
-        <!-- ==================== ABA PERSONALIZAÇÃO ==================== -->
-        <div id="abaPersonalizacao" class="hidden">
-            <header class="bg-white shadow px-8 py-4 flex justify-between items-center">
-                <h1 class="text-xl font-semibold text-gray-800">Personalização do Cardápio</h1>
-                <button onclick="salvarConfig()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-medium shadow flex items-center gap-2 transition cursor-pointer">
-                    <i class="fa-solid fa-floppy-disk"></i> Salvar Alterações
-                </button>
-            </header>
-
-            <main class="p-8 max-w-4xl w-full mx-auto space-y-6">
-                <div id="msgConfigOk" class="hidden bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded-lg"></div>
-                <div id="msgConfigErro" class="hidden bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg"></div>
-
-                <!-- Identidade -->
-                <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <h2 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-store text-amber-500"></i> Identidade da Loja</h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Nome do Mercado / Loja</label>
-                            <input type="text" id="cfgNome" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Slogan</label>
-                            <input type="text" id="cfgSlogan" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Logo da Loja</label>
-                            <div class="flex items-center gap-3">
-                                <img id="previewLogo" class="hidden w-12 h-12 rounded-full object-cover border border-gray-200" src="">
-                                <button type="button" onclick="document.getElementById('arquivoLogo').click()" class="px-3 py-2 border border-gray-300 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-50 cursor-pointer flex items-center gap-2 shrink-0">
-                                    <i class="fa-solid fa-upload"></i> Enviar imagem
-                                </button>
-                                <input type="file" id="arquivoLogo" accept="image/*" class="hidden" onchange="enviarImagemDoInput(this, 'cfgLogo', 'previewLogo', 'statusLogo')">
-                            </div>
-                            <input type="url" id="cfgLogo" placeholder="ou cole aqui a URL de uma imagem" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500 mt-2">
-                            <p id="statusLogo" class="text-xs mt-1"></p>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Banner de Destaque</label>
-                            <div class="flex items-center gap-3">
-                                <img id="previewBanner" class="hidden w-20 h-12 rounded-lg object-cover border border-gray-200" src="">
-                                <button type="button" onclick="document.getElementById('arquivoBanner').click()" class="px-3 py-2 border border-gray-300 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-50 cursor-pointer flex items-center gap-2 shrink-0">
-                                    <i class="fa-solid fa-upload"></i> Enviar imagem
-                                </button>
-                                <input type="file" id="arquivoBanner" accept="image/*" class="hidden" onchange="enviarImagemDoInput(this, 'cfgBanner', 'previewBanner', 'statusBanner')">
-                            </div>
-                            <input type="url" id="cfgBanner" placeholder="ou cole aqui a URL de uma imagem" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500 mt-2">
-                            <p id="statusBanner" class="text-xs mt-1"></p>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Horário e Funcionamento -->
-                <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <h2 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fa-regular fa-clock text-amber-500"></i> Horário de Funcionamento</h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Abre às</label>
-                            <input type="time" id="cfgHorarioAbertura" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Fecha às</label>
-                            <input type="time" id="cfgHorarioFechamento" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500">
-                        </div>
-                    </div>
-                    <div class="mt-4">
-                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-2">Dias de Funcionamento</label>
-                        <div id="cfgDias" class="flex flex-wrap gap-2"></div>
-                    </div>
-                    <div class="mt-4 flex items-center justify-between bg-red-50 border border-red-100 rounded-lg p-3">
-                        <div class="pr-4">
-                            <p class="text-sm font-semibold text-red-700">Fechar a loja agora</p>
-                            <p class="text-xs text-red-500">Ative quando quiser fechar mais cedo, ignorando o horário automático acima. O cardápio mostra "Fechado" e não aceita pedidos enquanto isso estiver ligado. Desative para voltar ao horário normal.</p>
-                        </div>
-                        <label class="relative inline-flex items-center cursor-pointer shrink-0">
-                            <input type="checkbox" id="cfgFechadoManual" class="sr-only peer">
-                            <div class="w-11 h-6 bg-gray-300 peer-checked:bg-red-500 rounded-full transition-colors"></div>
-                            <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
-                        </label>
-                    </div>
-                </section>
-
-                <!-- Cores do Tema -->
-                <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <h2 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-palette text-amber-500"></i> Cores do Tema</h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Cor do Cabeçalho</label>
-                            <div class="flex items-center gap-2">
-                                <input type="color" id="cfgCorPrimaria" class="w-10 h-10 border border-gray-300 rounded cursor-pointer">
-                                <input type="text" id="cfgCorPrimariaTxt" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Cor dos Botões</label>
-                            <div class="flex items-center gap-2">
-                                <input type="color" id="cfgCorBotao" class="w-10 h-10 border border-gray-300 rounded cursor-pointer">
-                                <input type="text" id="cfgCorBotaoTxt" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Cor de Destaque</label>
-                            <div class="flex items-center gap-2">
-                                <input type="color" id="cfgCorDestaque" class="w-10 h-10 border border-gray-300 rounded cursor-pointer">
-                                <input type="text" id="cfgCorDestaqueTxt" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500">
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Tipografia -->
-                <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <h2 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-font text-amber-500"></i> Tipografia</h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Fonte do Cardápio</label>
-                            <select id="cfgFonte" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500">
-                                <option value="Poppins">Poppins</option>
-                                <option value="Inter">Inter</option>
-                                <option value="Roboto">Roboto</option>
-                                <option value="Montserrat">Montserrat</option>
-                                <option value="Nunito">Nunito</option>
-                                <option value="Playfair Display">Playfair Display</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Tamanho Base da Fonte (px)</label>
-                            <input type="range" id="cfgTamanhoFonte" min="13" max="20" value="16" class="w-full">
-                            <div class="text-xs text-gray-500 mt-1"><span id="cfgTamanhoFonteValor">16</span>px</div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- O que exibir no cabeçalho -->
-                <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <h2 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-eye text-amber-500"></i> O que exibir no cabeçalho do cliente</h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-700">
-                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="cfgExibirLogo" class="accent-amber-500 w-4 h-4"> Logo</label>
-                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="cfgExibirSlogan" class="accent-amber-500 w-4 h-4"> Slogan</label>
-                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="cfgExibirBanner" class="accent-amber-500 w-4 h-4"> Banner de destaque</label>
-                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="cfgExibirHorario" class="accent-amber-500 w-4 h-4"> Horário de funcionamento</label>
-                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="cfgExibirDias" class="accent-amber-500 w-4 h-4"> Dias de funcionamento</label>
-                    </div>
-                </section>
-
-                <div class="flex justify-end">
-                    <button onclick="salvarConfig()" class="bg-amber-500 hover:bg-amber-600 text-white px-6 py-2.5 rounded-lg font-medium shadow flex items-center gap-2 transition cursor-pointer">
-                        <i class="fa-solid fa-floppy-disk"></i> Salvar Alterações
-                    </button>
-                </div>
-            </main>
-        </div>
-
-        <!-- ==================== ABA CLIENTES ==================== -->
-        <div id="abaClientes" class="hidden">
-            <header class="bg-white shadow px-8 py-4 flex justify-between items-center">
-                <h1 class="text-xl font-semibold text-gray-800">Clientes</h1>
-                <button onclick="carregarClientes()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-medium shadow flex items-center gap-2 transition cursor-pointer">
-                    <i class="fa-solid fa-rotate"></i> Atualizar
-                </button>
-            </header>
-            <main class="p-8 max-w-6xl w-full mx-auto">
-                <p class="text-xs text-gray-400 mb-4">Montado automaticamente a partir do histórico de pedidos (aba "Pedidos" da planilha). Identifica cada cliente pelo WhatsApp informado no pedido.</p>
-                <div class="flex flex-col sm:flex-row gap-3 mb-4">
-                    <input type="text" id="buscaCliente" placeholder="Buscar por nome, WhatsApp ou endereço..." class="flex-1 border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500" oninput="renderizarClientes()">
-                    <select id="ordenarClientes" onchange="renderizarClientes()" class="border border-gray-300 rounded-lg p-2 text-sm focus:outline-amber-500">
-                        <option value="pedidos">Ordenar: mais pedidos</option>
-                        <option value="gasto">Ordenar: maior valor gasto</option>
-                    </select>
-                </div>
-                <div id="msgClientesVazio" class="hidden text-center text-gray-400 py-12">Nenhum pedido registrado ainda.</div>
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-gray-50 border-b border-gray-200 text-gray-600 text-sm font-semibold uppercase">
-                                <th class="p-4">Cliente</th>
-                                <th class="p-4">WhatsApp</th>
-                                <th class="p-4">Endereço</th>
-                                <th class="p-4">Pedidos</th>
-                                <th class="p-4">Total Gasto</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabela-clientes" class="divide-y divide-gray-100 text-gray-700 text-sm"></tbody>
-                    </table>
-                </div>
-            </main>
-        </div>
-
-        <!-- ==================== ABA RELATÓRIOS ==================== -->
-        <div id="abaRelatorios" class="hidden">
-            <header class="bg-white shadow px-8 py-4 flex justify-between items-center">
-                <h1 class="text-xl font-semibold text-gray-800">Relatórios e Métricas</h1>
-                <button onclick="carregarRelatorios()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-medium shadow flex items-center gap-2 transition cursor-pointer">
-                    <i class="fa-solid fa-rotate"></i> Atualizar
-                </button>
-            </header>
-            <main class="p-8 max-w-6xl w-full mx-auto space-y-6">
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                        <p class="text-xs text-gray-400 uppercase font-semibold">Pedidos</p>
-                        <p id="metricaPedidos" class="text-2xl font-bold text-gray-900 mt-1">0</p>
-                    </div>
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                        <p class="text-xs text-gray-400 uppercase font-semibold">Faturamento</p>
-                        <p id="metricaFaturamento" class="text-2xl font-bold text-gray-900 mt-1">R$ 0,00</p>
-                    </div>
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                        <p class="text-xs text-gray-400 uppercase font-semibold">Ticket Médio</p>
-                        <p id="metricaTicket" class="text-2xl font-bold text-gray-900 mt-1">R$ 0,00</p>
-                    </div>
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                        <p class="text-xs text-gray-400 uppercase font-semibold">Clientes Únicos</p>
-                        <p id="metricaClientes" class="text-2xl font-bold text-gray-900 mt-1">0</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <h2 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-trophy text-amber-500"></i> Produtos mais vendidos</h2>
-                        <div id="rankingProdutos" class="space-y-2 text-sm"></div>
-                    </section>
-                    <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <h2 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-credit-card text-amber-500"></i> Formas de pagamento</h2>
-                        <div id="rankingPagamento" class="space-y-2 text-sm"></div>
-                    </section>
-                </div>
-            </main>
-        </div>
-
-        <!-- ==================== ABA BACKUP ==================== -->
-        <div id="abaBackup" class="hidden">
-            <header class="bg-white shadow px-8 py-4 flex justify-between items-center">
-                <h1 class="text-xl font-semibold text-gray-800">Backup e Segurança</h1>
-            </header>
-            <main class="p-8 max-w-3xl w-full mx-auto space-y-6">
-                <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <h2 class="font-bold text-gray-800 mb-2 flex items-center gap-2"><i class="fa-solid fa-download text-amber-500"></i> Baixar backup completo</h2>
-                    <p class="text-sm text-gray-500 mb-4">Gera um arquivo com todos os produtos, configurações do cardápio e histórico de pedidos. Guarde esse arquivo em local seguro — recomendado baixar periodicamente.</p>
-                    <button onclick="baixarBackup()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-medium shadow flex items-center gap-2 transition cursor-pointer">
-                        <i class="fa-solid fa-download"></i> Baixar backup (.json)
-                    </button>
-                    <p id="statusBackup" class="text-xs mt-2"></p>
-                </section>
-
-                <section class="bg-white rounded-xl shadow-sm border border-red-200 p-6">
-                    <h2 class="font-bold text-red-700 mb-2 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Restaurar backup</h2>
-                    <p class="text-sm text-gray-500 mb-4">Restaura os <strong>produtos</strong> e a <strong>personalização</strong> a partir de um arquivo de backup baixado anteriormente. Isso substitui os dados atuais dessas duas áreas — o histórico de pedidos não é afetado. Use com cuidado.</p>
-                    <input type="file" id="arquivoRestaurar" accept="application/json" class="hidden" onchange="restaurarBackup(event)">
-                    <button onclick="document.getElementById('arquivoRestaurar').click()" class="border border-red-300 text-red-700 hover:bg-red-50 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition cursor-pointer">
-                        <i class="fa-solid fa-upload"></i> Selecionar arquivo de backup
-                    </button>
-                    <p id="statusRestaurar" class="text-xs mt-2"></p>
-                </section>
-            </main>
-        </div>
-    </div>
-
-    <!-- Modal Formulário (Adicionar/Editar Produto) -->
-    <div id="modalProduto" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-xl shadow-lg max-w-md w-full overflow-hidden">
-            <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
-
-                <h3 id="modalTitulo" class="font-bold">Novo Produto</h3>
-                <button onclick="fecharModal()" class="text-gray-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+                <h2 class="text-2xl font-bold text-slate-800">Acesso Restrito</h2>
+                <p class="text-sm text-gray-500 mt-1">Insira suas credenciais de administrador</p>
             </div>
-            <form id="formProduto" onsubmit="salvarProduto(event)" class="p-6 space-y-4">
-                <input type="hidden" id="prodId">
+
+            <div id="formLoginContainer">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
+                    <input type="email" id="loginEmail" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-amber-500 outline-none" placeholder="admin@admin.com">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+                    <input type="password" id="loginSenha" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-amber-500 outline-none" placeholder="••••••••">
+                </div>
+                <button onclick="fazerLogin()" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 rounded-lg transition shadow-md">
+                    Entrar no Painel
+                </button>
+                <p id="msgLogin" class="text-xs text-center text-red-600 mt-3 font-medium"></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="telaTrocaSenha" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-8">
+            <div class="text-center mb-6">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 text-blue-600 rounded-full mb-3 text-2xl">
+                    <i class="fa-solid fa-key"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800">Crie sua Nova Senha</h2>
+                <p class="text-sm text-gray-500 mt-1">Este é seu primeiro acesso. Por segurança, defina uma nova senha definitiva.</p>
+            </div>
+
+            <div>
+                <input type="hidden" id="trocaEmailHidden">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Senha Provisória Recebida</label>
+                    <input type="password" id="trocaSenhaProvisoria" class="w-full px-4 py-2 border rounded-lg outline-none" placeholder="Senha temporária">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nova Senha</label>
+                    <input type="password" id="trocaNovaSenha" oninput="validarForcaSenha(this.value)" class="w-full px-4 py-2 border rounded-lg outline-none" placeholder="Mínimo 8 caracteres, maiúsculas, números e símbolos">
+                    <div class="mt-2 space-y-1 text-xs" id="requisitosSenha">
+                        <p id="reqLen" class="text-gray-400"><i class="fa-solid fa-circle text-[8px]"></i> Mínimo de 8 caracteres</p>
+                        <p id="reqMaius" class="text-gray-400"><i class="fa-solid fa-circle text-[8px]"></i> Letra maiúscula e minúscula</p>
+                        <p id="reqNum" class="text-gray-400"><i class="fa-solid fa-circle text-[8px]"></i> Número</p>
+                        <p id="reqSim" class="text-gray-400"><i class="fa-solid fa-circle text-[8px]"></i> Símbolo especial (@#$*)</p>
+                    </div>
+                </div>
+                <button onclick="salvarNovaSenha()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg transition shadow-md">
+                    Salvar e Acessar o Painel
+                </button>
+                <p id="msgTroca" class="text-xs text-center text-red-600 mt-3 font-medium"></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="painelPrincipal" class="flex h-screen overflow-hidden w-full">
+        <div class="w-64 bg-slate-900 text-white flex flex-col justify-between shrink-0">
+            <div class="p-5">
+                <h2 class="text-xl font-bold tracking-wider text-amber-500 flex items-center gap-2">
+                    <i class="fa-solid fa-burger"></i> Admin Pro
+                </h2>
+                <nav class="mt-10 space-y-2">
+                    <a href="#" onclick="mudarAba('produtos'); return false;" id="navProdutos" class="flex items-center gap-3 px-4 py-3 bg-slate-800 rounded-lg text-white transition">
+                        <i class="fa-solid fa-utensils w-5"></i> Cardápio / Produtos
+                    </a>
+                    <a href="#" onclick="mudarAba('pedidos'); return false;" id="navPedidos" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-slate-800 rounded-lg transition">
+                        <i class="fa-solid fa-receipt w-5"></i> Pedidos
+                    </a>
+                    <a href="#" onclick="mudarAba('config'); return false;" id="navConfig" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-slate-800 rounded-lg transition">
+                        <i class="fa-solid fa-gear w-5"></i> Configurações & Loja
+                    </a>
+                    <a href="#" onclick="mudarAba('admins'); return false;" id="navAdmins" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-slate-800 rounded-lg transition">
+                        <i class="fa-solid fa-users-gear w-5"></i> Usuários Admins
+                    </a>
+                    <a href="#" onclick="mudarAba('backup'); return false;" id="navBackup" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-slate-800 rounded-lg transition">
+                        <i class="fa-solid fa-database w-5"></i> Backup & Restaurar
+                    </a>
+                </nav>
+            </div>
+            <div class="p-5 border-t border-slate-800">
+                <button onclick="fazerLogout()" class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition text-sm font-medium">
+                    <i class="fa-solid fa-right-from-bracket"></i> Sair do Painel
+                </button>
+            </div>
+        </div>
+
+        <div class="flex-1 flex flex-col overflow-y-auto">
+            <header class="bg-white shadow-sm px-8 py-4 flex justify-between items-center shrink-0">
+                <h1 id="tituloAba" class="text-xl font-bold text-slate-800">Gerenciamento de Produtos</h1>
+                <div class="flex items-center gap-3">
+                    <span id="adminLogadoNome" class="text-sm font-semibold text-slate-600">Admin</span>
+                </div>
+            </header>
+
+            <main class="p-8">
+                <div id=" abaProdutos" class="aba-conteudo">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-semibold text-slate-700">Lista de Produtos</h3>
+                        <button onclick="abrirModalProduto()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-medium shadow transition flex items-center gap-2">
+                            <i class="fa-solid fa-plus"></i> Novo Produto
+                        </button>
+                    </div>
+                    <div class="bg-white rounded-xl shadow overflow-hidden">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 border-b text-gray-600 text-sm">
+                                    <th class="p-4">Imagem</th>
+                                    <th class="p-4">Nome</th>
+                                    <th class="p-4">Categoria</th>
+                                    <th class="p-4">Preço</th>
+                                    <th class="p-4">Status</th>
+                                    <th class="p-4 text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaProdutosCorpo">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="abaPedidos" class="aba-conteudo hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-semibold text-slate-700">Acompanhamento de Pedidos</h3>
+                        <button onclick="carregarPedidos()" class="text-sm text-amber-600 hover:underline flex items-center gap-1 font-medium"><i class="fa-solid fa-rotate"></i> Atualizar</button>
+                    </div>
+                    <div id="listaPedidosContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        </div>
+                </div>
+
+                <div id="abaConfig" class="aba-conteudo hidden">
+                    <div class="bg-white rounded-xl shadow p-6 max-w-2xl">
+                        <h3 class="text-lg font-semibold text-slate-700 mb-4">Configurações da Loja & Horários</h3>
+                        <div id="configFormContainer" class="space-y-4">
+                            </div>
+                        <button onclick="salvarConfiguracoes()" class="mt-6 bg-slate-900 hover:bg-slate-800 text-white px-6 py-2 rounded-lg font-medium transition">
+                            Salvar Configurações
+                        </button>
+                    </div>
+                </div>
+
+                <div id="abaAdmins" class="aba-conteudo hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-semibold text-slate-700">Controle de Administradores</h3>
+                        <button onclick="abrirModalNovoAdmin()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-medium shadow transition flex items-center gap-2">
+                            <i class="fa-solid fa-user-plus"></i> Cadastrar Novo Admin
+                        </button>
+                    </div>
+                    <div class="bg-white rounded-xl shadow overflow-hidden">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 border-b text-gray-600 text-sm">
+                                    <th class="p-4">Nome</th>
+                                    <th class="p-4">E-mail (Login)</th>
+                                    <th class="p-4">Permissão</th>
+                                    <th class="p-4">Primeiro Acesso Pendente</th>
+                                    <th class="p-4 text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaAdminsCorpo"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="abaBackup" class="aba-conteudo hidden">
+                    <div class="bg-white rounded-xl shadow p-6 max-w-xl space-y-6">
+                        <div>
+                            <h3 class="text-lg font-semibold text-slate-700 mb-2">Exportar Backup Completo</h3>
+                            <p class="text-sm text-gray-500 mb-4">Baixe um arquivo JSON contendo todos os produtos e configurações do seu sistema.</p>
+                            <button onclick="baixarBackup()" class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2 rounded-lg font-medium transition flex items-center gap-2">
+                                <i class="fa-solid fa-download"></i> Baixar Backup JSON
+                            </button>
+                        </div>
+                        <hr class="border-gray-200">
+                        <div>
+                            <h3 class="text-lg font-semibold text-slate-700 mb-2">Restaurar Sistema por Backup</h3>
+                            <p class="text-sm text-gray-500 mb-4">Selecione um arquivo de backup JSON para restaurar o catálogo e configurações.</p>
+                            <input type="file" id="arquivoBackup" accept=".json" onchange="restaurarBackup(event)" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100">
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div id="modalProduto" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+            <h3 id="modalProdutoTitulo" class="text-xl font-bold text-slate-800 mb-4">Adicionar Produto</h3>
+            <input type="hidden" id="prodId">
+            <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Nome do Produto</label>
-                    <input type="text" id="prodNome" required class="w-full border border-gray-300 rounded-lg p-2 focus:outline-amber-500 text-sm">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nome do Produto</label>
+                    <input type="text" id="prodNome" class="w-full px-3 py-2 border rounded-lg outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Descrição / Ingredientes</label>
-                    <textarea id="prodDescricao" rows="2" class="w-full border border-gray-300 rounded-lg p-2 focus:outline-amber-500 text-sm"></textarea>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+                    <textarea id="prodDesc" rows="3" class="w-full px-3 py-2 border rounded-lg outline-none"></textarea>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Preço (R$)</label>
-                        <input type="number" step="0.01" id="prodPreco" required class="w-full border border-gray-300 rounded-lg p-2 focus:outline-amber-500 text-sm">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Preço (R$)</label>
+                        <input type="number" step="0.01" id="prodPreco" class="w-full px-3 py-2 border rounded-lg outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Categoria</label>
-                        <select id="prodCategoria" class="w-full border border-gray-300 rounded-lg p-2 focus:outline-amber-500 text-sm">
-                            <option value="Hambúrgueres">Hambúrgueres</option>
-                            <option value="Pizzas">Pizzas</option>
-                            <option value="Açaí">Açaí</option>
-                            <option value="Bebidas">Bebidas</option>
-                            <option value="Promoção">Promoção</option>
-                            <option value="Combo">Combo</option>
-                        </select>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
+                        <input type="text" id="prodCategoria" class="w-full px-3 py-2 border rounded-lg outline-none">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Foto do Item</label>
-                    <div class="flex items-center gap-3 mb-2">
-                        <img id="previewProdFoto" class="hidden w-12 h-12 rounded-lg object-cover border border-gray-200" src="">
-                        <button type="button" onclick="document.getElementById('arquivoProdFoto').click()" class="px-3 py-2 border border-gray-300 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-50 cursor-pointer flex items-center gap-2 shrink-0">
-                            <i class="fa-solid fa-upload"></i> Enviar imagem
-                        </button>
-                        <input type="file" id="arquivoProdFoto" accept="image/*" class="hidden" onchange="enviarImagemDoInput(this, 'prodFoto', 'previewProdFoto', 'statusProdFoto')">
-                    </div>
-                    <input type="url" id="prodFoto" placeholder="ou cole aqui a URL de uma imagem" class="w-full border border-gray-300 rounded-lg p-2 focus:outline-amber-500 text-sm">
-                    <p id="statusProdFoto" class="text-xs mt-1"></p>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">URL da Imagem</label>
+                    <input type="text" id="prodImagem" class="w-full px-3 py-2 border rounded-lg outline-none" placeholder="https://exemplo.com/imagem.jpg">
+                </div>
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="prodDisponivel" checked class="w-4 h-4 text-amber-600 rounded">
+                    <label class="text-sm font-medium text-gray-700">Produto Disponível no Cardápio</label>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+                <button onclick="fecharModalProduto()" class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-50">Cancelar</button>
+                <button onclick="salvarProduto()" class="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg shadow">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalAdmin" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+            <h3 class="text-xl font-bold text-slate-800 mb-4">Cadastrar Novo Administrador</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nome Completo</label>
+                    <input type="text" id="novoAdminNome" class="w-full px-3 py-2 border rounded-lg outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Status nas Vendas</label>
-                    <select id="prodStatus" class="w-full border border-gray-300 rounded-lg p-2 focus:outline-amber-500 text-sm">
-                        <option value="Disponível">Disponível</option>
-                        <option value="Indisponível">Indisponível</option>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">E-mail (Login)</label>
+                    <input type="email" id="novoAdminEmail" class="w-full px-3 py-2 border rounded-lg outline-none" placeholder="novo@admin.com">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Permissão</label>
+                    <select id="novoAdminPermissao" class="w-full px-3 py-2 border rounded-lg outline-none bg-white">
+                        <option value="Operador">Operador (Gerencia pedidos e cardápio)</option>
+                        <option value="Master">Master (Acesso total)</option>
                     </select>
                 </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="fecharModal()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm cursor-pointer hover:bg-gray-50">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-medium shadow cursor-pointer">Salvar Alterações</button>
-                </div>
-            </form>
+                <p class="text-xs text-gray-500">Uma senha provisória segura será gerada automaticamente e enviada por e-mail para o novo administrador.</p>
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+                <button onclick="fecharModalNovoAdmin()" class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-50">Cancelar</button>
+                <button onclick="enviarCadastroAdmin()" class="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg shadow">Cadastrar e Enviar E-mail</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // ATENÇÃO: essa URL precisa ser SEMPRE a mesma usada no index.html (cardápio do cliente).
-        // Toda vez que você fizer "Nova versão" no Apps Script, atualize aqui e lá também.
-        const API_URL = "https://script.google.com/macros/s/AKfycbxOjeW76WQYdksHvgXFTC5BCviwlTeUtg_5EOVgxsN8xPosOafe-gj8WDpPryCYmvDf/exec";
-        const TOKEN = "acai_gourmet_pro_2026";
-        const DIAS_SEMANA = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
+        // CONFIGURAR URL DA API DO GOOGLE APPS SCRIPT AQUI
+        const API_URL = "SUA_URL_DO_WEB_APP_AQUI";
 
-        // ============ UPLOAD DE IMAGENS (logo, banner, foto de produto) ============
-        const TAMANHO_MAXIMO_MB = 5;
+        let produtosCache = [];
+        let configCache = [];
+        let tokenAdmin = localStorage.getItem("adminSessionToken") || "";
 
-        function lerArquivoComoBase64(arquivo) {
-            return new Promise((resolve, reject) => {
-                const leitor = new FileReader();
-                leitor.onload = () => resolve(leitor.result.split(",")[1]);
-                leitor.onerror = () => reject(new Error("Não foi possível ler o arquivo."));
-                leitor.readAsDataURL(arquivo);
-            });
+        window.onload = function () {
+            if (tokenAdmin) {
+                verificarSessaoEIniciar();
+            } else {
+                mostrarTelaLogin();
+            }
+        };
+
+        function mostrarTelaLogin() {
+            document.getElementById("telaLogin").classList.remove("hidden");
+            document.getElementById("telaTrocaSenha").classList.add("hidden");
+            document.getElementById("painelPrincipal").classList.add("hidden");
         }
 
-        async function enviarImagemDoInput(inputArquivo, idCampoUrl, idPreview, idStatus) {
-            const arquivo = inputArquivo.files[0];
-            if (!arquivo) return;
+        async function fazerLogin() {
+            const email = document.getElementById("loginEmail").value.trim();
+            const senha = document.getElementById("loginSenha").value.trim();
+            const msg = document.getElementById("msgLogin");
 
-            const status = document.getElementById(idStatus);
-            const preview = document.getElementById(idPreview);
-
-            if (!arquivo.type.startsWith("image/")) {
-                status.className = "text-xs mt-1 text-red-600";
-                status.innerText = "Escolha um arquivo de imagem válido.";
+            if (!email || !senha) {
+                msg.innerText = "Preencha o e-mail e a senha.";
                 return;
             }
 
-            if (arquivo.size > TAMANHO_MAXIMO_MB * 1024 * 1024) {
-                status.className = "text-xs mt-1 text-red-600";
-                status.innerText = `A imagem deve ter no máximo ${TAMANHO_MAXIMO_MB}MB.`;
-                return;
-            }
-
-            status.className = "text-xs mt-1 text-gray-500";
-            status.innerText = "Enviando imagem...";
-
+            msg.innerText = "Autenticando...";
             try {
-                const base64 = await lerArquivoComoBase64(arquivo);
-
-                const resposta = await fetch(API_URL, {
+                const resp = await fetch(API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "text/plain" },
-                    body: JSON.stringify({
-                        token: TOKEN,
-                        action: "upload_imagem",
-                        nomeArquivo: arquivo.name,
-                        mimeType: arquivo.type,
-                        dadosBase64: base64
-                    })
+                    body: JSON.stringify({ action: "admin_login", email: email, senha: senha })
                 });
+                const res = await resp.json();
 
-                const resultado = await resposta.json();
-
-                if (resultado.status !== "success") {
-                    throw new Error(resultado.message || "O servidor recusou o envio da imagem.");
+                if (res.status === "success") {
+                    if (res.primeiroAcesso) {
+                        // Abre tela de troca obrigatória de senha
+                        document.getElementById("telaLogin").classList.add("hidden");
+                        document.getElementById("telaTrocaSenha").classList.remove("hidden");
+                        document.getElementById("trocaEmailHidden").value = email;
+                        document.getElementById("trocaSenhaProvisoria").value = senha;
+                    } else {
+                        tokenAdmin = res.token;
+                        localStorage.setItem("adminSessionToken", tokenAdmin);
+                        localStorage.setItem("adminNome", res.nome || "Admin");
+                        iniciarPainel();
+                    }
+                } else {
+                    msg.innerText = res.message || "Erro ao entrar.";
                 }
-
-                document.getElementById(idCampoUrl).value = resultado.url;
-                preview.src = resultado.url;
-                preview.classList.remove("hidden");
-                status.className = "text-xs mt-1 text-green-600";
-                status.innerText = "Imagem enviada com sucesso!";
-                setTimeout(() => { status.innerText = ""; }, 4000);
-            } catch (erro) {
-                console.error("Erro ao enviar imagem:", erro);
-                status.className = "text-xs mt-1 text-red-600";
-                status.innerText = "Falha ao enviar: " + erro.message;
-            } finally {
-                inputArquivo.value = "";
+            } catch (e) {
+                msg.innerText = "Erro de conexão com o servidor.";
             }
         }
 
-        // ============ NAVEGAÇÃO ENTRE ABAS ============
-        const LISTA_ABAS = ["produtos", "personalizacao", "clientes", "relatorios", "backup"];
+        function validarForcaSenha(senha) {
+            const reqLen = document.getElementById("reqLen");
+            const reqMaius = document.getElementById("reqMaius");
+            const reqNum = document.getElementById("reqNum");
+            const reqSim = document.getElementById("reqSim");
 
-        function capitalizarAba(aba) {
-            return aba.charAt(0).toUpperCase() + aba.slice(1);
+            const temLen = senha.length >= 8;
+            const temMaius = /[A-Z]/.test(senha) && /[a-z]/.test(senha);
+            const temNum = /[0-9]/.test(senha);
+            const temSim = /[@#$*!%&_-]/.test(senha);
+
+            reqLen.className = temLen ? "text-green-600 font-medium" : "text-gray-400";
+            reqMaius.className = temMaius ? "text-green-600 font-medium" : "text-gray-400";
+            reqNum.className = temNum ? "text-green-600 font-medium" : "text-gray-400";
+            reqSim.className = temSim ? "text-green-600 font-medium" : "text-gray-400";
+        }
+
+        async function salvarNovaSenha() {
+            const email = document.getElementById("trocaEmailHidden").value;
+            const senhaProvisoria = document.getElementById("trocaSenhaProvisoria").value;
+            const novaSenha = document.getElementById("trocaNovaSenha").value;
+            const msg = document.getElementById("msgTroca");
+
+            if (novaSenha.length < 8) {
+                msg.innerText = "A nova senha deve ter no mínimo 8 caracteres.";
+                return;
+            }
+
+            msg.innerText = "Salvando nova senha...";
+            try {
+                const resp = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain" },
+                    body: JSON.stringify({ action: "alterar_primeira_senha", email: email, senhaProvisoria: senhaProvisoria, novaSenha: novaSenha })
+                });
+                const res = await resp.json();
+
+                if (res.status === "success") {
+                    alert("Senha criada com sucesso! Faça login com sua nova senha.");
+                    mostrarTelaLogin();
+                } else {
+                    msg.innerText = res.message || "Erro ao alterar senha.";
+                }
+            } catch (e) {
+                msg.innerText = "Erro de conexão.";
+            }
+        }
+
+        function verificarSessaoEIniciar() {
+            document.getElementById("telaLogin").classList.add("hidden");
+            document.getElementById("telaTrocaSenha").classList.add("hidden");
+            document.getElementById("painelPrincipal").classList.remove("hidden");
+            document.getElementById("adminLogadoNome").innerText = localStorage.getItem("adminNome") || "Administrador";
+            mudarAba('produtos');
+        }
+
+        function iniciarPainel() {
+            verificarSessaoEIniciar();
+        }
+
+        function fazerLogout() {
+            localStorage.removeItem("adminSessionToken");
+            localStorage.removeItem("adminNome");
+            tokenAdmin = "";
+            mostrarTelaLogin();
         }
 
         function mudarAba(aba) {
-            LISTA_ABAS.forEach(a => {
-                const painel = document.getElementById("aba" + capitalizarAba(a));
-                const nav = document.getElementById("nav" + capitalizarAba(a));
-                if (!painel || !nav) return;
-
-                if (a === aba) {
-                    painel.classList.remove("hidden");
-                    nav.classList.add("bg-slate-800", "text-white");
-                    nav.classList.remove("text-gray-300");
-                } else {
-                    painel.classList.add("hidden");
-                    nav.classList.remove("bg-slate-800", "text-white");
-                    nav.classList.add("text-gray-300");
-                }
+            ['produtos', 'pedidos', 'config', 'admins', 'backup'].forEach(a => {
+                document.getElementById('aba' + capitalize(a)).classList.add('hidden');
+                document.getElementById('nav' + capitalize(a)).className = "flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-slate-800 rounded-lg transition";
             });
+            document.getElementById('aba' + capitalize(aba)).classList.remove('hidden');
+            document.getElementById('nav' + capitalize(aba)).className = "flex items-center gap-3 px-4 py-3 bg-slate-800 rounded-lg text-white transition";
 
-            if (aba === "clientes") carregarClientes();
-            if (aba === "relatorios") carregarRelatorios();
+            const titulos = { produtos: "Gerenciamento de Produtos", pedidos: "Acompanhamento de Pedidos", config: "Configurações da Loja", admins: "Controle de Administradores", backup: "Backup & Restaurar Sistema" };
+            document.getElementById("tituloAba").innerText = titulos[aba];
+
+            if (aba === 'produtos') carregarProdutos();
+            if (aba === 'pedidos') carregarPedidos();
+            if (aba === 'config') carregarConfig();
+            if (aba === 'admins') carregarAdmins();
         }
 
-        // ============ PRODUTOS ============
-        function mostrarErro(msg) {
-            const box = document.getElementById("msgErro");
-            box.innerText = msg;
-            box.classList.remove("hidden");
+        function capitalize(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
         }
 
-        function esconderErro() {
-            document.getElementById("msgErro").classList.add("hidden");
-        }
-
+        // --- PRODUTOS ---
         async function carregarProdutos() {
             try {
-                const response = await fetch(`${API_URL}?sheet=Produtos&_t=${Date.now()}`);
-
-                if (!response.ok) {
-                    throw new Error(`Servidor respondeu com status ${response.status}`);
+                const resp = await fetch(API_URL + "?sheet=Produtos");
+                const data = await resp.json();
+                produtosCache = [];
+                if (Array.isArray(data) && data.length > 1) {
+                    for (let i = 1; i < data.length; i++) {
+                        let r = data[i];
+                        produtosCache.push({ id: r[0], nome: r[1], descricao: r[2], preco: r[3], categoria: r[4], imagem: r[5], disponivel: r[6], adicionais: r[7] });
+                    }
                 }
-
-                const produtos = await response.json();
-
-                if (produtos.error) {
-                    throw new Error(produtos.error);
-                }
-
-                esconderErro();
-
-                const tabela = document.getElementById("tabela-produtos");
-                tabela.innerHTML = "";
-
-                if (produtos.length === 0) {
-                    tabela.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-400">Nenhum produto cadastrado ainda.</td></tr>`;
-                    return;
-                }
-
-                produtos.forEach(prod => {
-                    tabela.innerHTML += `
-                        <tr class="hover:bg-gray-50 border-b border-gray-100 transition">
-                            <td class="p-4"><img src="${prod.foto || 'https://placehold.co/50x50?text=Sem+Foto'}" class="w-12 h-12 object-cover rounded-lg border border-gray-200" onerror="this.onerror=null;this.src='https://placehold.co/50x50?text=Sem+Foto'"></td>
-                            <td class="p-4"><div class="font-medium text-gray-900">${prod.nome}</div><div class="text-xs text-gray-400 max-w-xs truncate">${prod.descricao || ''}</div></td>
-                            <td class="p-4"><span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs font-semibold">${prod.categoria}</span></td>
-                            <td class="p-4 font-semibold text-gray-900">R$ ${parseFloat(prod.preco).toFixed(2)}</td>
-                            <td class="p-4"><span class="px-2 py-0.5 rounded-full text-xs font-medium ${prod.status === 'Disponível' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}">${prod.status}</span></td>
-                            <td class="p-4 text-right space-x-3">
-                                <button onclick='abrirModalEditar(${JSON.stringify(prod)})' class="text-blue-600 hover:text-blue-900 font-medium cursor-pointer"><i class="fa-solid fa-pen"></i></button>
-                                <button onclick="deletarProduto('${prod.id}')" class="text-red-600 hover:text-red-900 cursor-pointer"><i class="fa-solid fa-trash"></i></button>
-                            </td>
-                        </tr>
-                    `;
-                });
+                renderizarTabelaProdutos();
             } catch (e) {
-                console.error("Erro ao carregar cardápio:", e);
-                mostrarErro("Não foi possível carregar os produtos. Verifique a URL da API no código do painel. Detalhe: " + e.message);
+                console.error("Erro ao carregar produtos:", e);
             }
         }
 
-        function abrirModal() {
-            document.getElementById("formProduto").reset();
-            document.getElementById("prodId").value = "ID_" + Date.now();
-            document.getElementById("modalTitulo").innerText = "Novo Produto";
-            document.getElementById("previewProdFoto").classList.add("hidden");
-            document.getElementById("statusProdFoto").innerText = "";
-            document.getElementById("modalProduto").classList.remove("hidden");
+        function renderizarTabelaProdutos() {
+            const corpo = document.getElementById("tabelaProdutosCorpo");
+            corpo.innerHTML = "";
+            produtosCache.forEach(p => {
+                corpo.innerHTML += `
+                    <tr class="border-b hover:bg-gray-50 text-sm">
+                        <td class="p-4"><img src="${p.imagem || 'https://via.placeholder.com/50'}" class="w-12 h-12 object-cover rounded-lg"></td>
+                        <td class="p-4 font-medium text-slate-800">${p.nome}</td>
+                        <td class="p-4 text-gray-600">${p.categoria}</td>
+                        <td class="p-4 font-semibold text-slate-700">R$ ${Number(p.preco).toFixed(2)}</td>
+                        <td class="p-4"><span class="px-2.5 py-1 rounded-full text-xs font-medium ${p.disponivel !== false && p.disponivel !== "FALSE" ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${p.disponivel !== false && p.disponivel !== "FALSE" ? 'Disponível' : 'Indisponível'}</span></td>
+                        <td class="p-4 text-center space-x-2">
+                            <button onclick="editarProduto('${p.id}')" class="text-blue-600 hover:underline"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="excluirProduto('${p.id}')" class="text-red-600 hover:underline"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
         }
 
-        function abrirModalEditar(prod) {
-            document.getElementById("modalTitulo").innerText = "Editar Produto";
-            document.getElementById("prodId").value = prod.id;
-            document.getElementById("prodNome").value = prod.nome;
-            document.getElementById("prodDescricao").value = prod.descricao;
-            document.getElementById("prodPreco").value = prod.preco;
-            document.getElementById("prodCategoria").value = prod.categoria;
-            document.getElementById("prodFoto").value = prod.foto;
-            document.getElementById("prodStatus").value = prod.status;
-            document.getElementById("statusProdFoto").innerText = "";
-
-            const previewProdFoto = document.getElementById("previewProdFoto");
-            if (prod.foto) {
-                previewProdFoto.src = prod.foto;
-                previewProdFoto.classList.remove("hidden");
+        function abrirModalProduto(id = null) {
+            document.getElementById("modalProduto").classList.remove("hidden");
+            if (id) {
+                const p = produtosCache.find(x => String(x.id) === String(id));
+                document.getElementById("modalProdutoTitulo").innerText = "Editar Produto";
+                document.getElementById("prodId").value = p.id;
+                document.getElementById("prodNome").value = p.nome;
+                document.getElementById("prodDesc").value = p.descricao;
+                document.getElementById("prodPreco").value = p.preco;
+                document.getElementById("prodCategoria").value = p.categoria;
+                document.getElementById("prodImagem").value = p.imagem;
+                document.getElementById("prodDisponivel").checked = (p.disponivel !== false && p.disponivel !== "FALSE");
             } else {
-                previewProdFoto.classList.add("hidden");
+                document.getElementById("modalProdutoTitulo").innerText = "Adicionar Produto";
+                document.getElementById("prodId").value = "PROD-" + Date.now();
+                document.getElementById("prodNome").value = "";
+                document.getElementById("prodDesc").value = "";
+                document.getElementById("prodPreco").value = "";
+                document.getElementById("prodCategoria").value = "";
+                document.getElementById("prodImagem").value = "";
+                document.getElementById("prodDisponivel").checked = true;
             }
-
-            document.getElementById("modalProduto").classList.remove("hidden");
         }
 
-        function fecharModal() { document.getElementById("modalProduto").classList.add("hidden"); }
+        function fecharModalProduto() {
+            document.getElementById("modalProduto").classList.add("hidden");
+        }
 
-        async function salvarProduto(e) {
-            e.preventDefault();
-            const idExistente = document.getElementById("modalTitulo").innerText === "Editar Produto";
-            const payload = {
-                token: TOKEN,
-                sheet: "Produtos",
-                action: idExistente ? "edit" : "add",
+        async function salvarProduto() {
+            const produto = {
                 id: document.getElementById("prodId").value,
                 nome: document.getElementById("prodNome").value,
-                descricao: document.getElementById("prodDescricao").value,
+                descricao: document.getElementById("prodDesc").value,
                 preco: document.getElementById("prodPreco").value,
                 categoria: document.getElementById("prodCategoria").value,
-                foto: document.getElementById("prodFoto").value,
-                status: document.getElementById("prodStatus").value
+                imagem: document.getElementById("prodImagem").value,
+                disponivel: document.getElementById("prodDisponivel").checked,
+                adicionais: []
             };
 
-            try {
-                const resposta = await fetch(API_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "text/plain" },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!resposta.ok) {
-                    throw new Error(`Servidor respondeu com status ${resposta.status}`);
-                }
-
-                const resultado = await resposta.json();
-
-                if (resultado.status === "unauthorized") {
-                    alert("Token inválido. Verifique se o TOKEN no admin.html é igual ao do Apps Script.");
-                    return;
-                }
-
-                if (resultado.status !== "success") {
-                    alert("O servidor recusou a operação: " + (resultado.message || JSON.stringify(resultado)));
-                    return;
-                }
-
-                fecharModal();
+            const resp = await fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify({ token: tokenAdmin, action: "salvar_produto", produto: produto })
+            });
+            const res = await resp.json();
+            if (res.status === "success") {
+                fecharModalProduto();
                 carregarProdutos();
-            } catch (error) {
-                console.error("Erro ao salvar produto:", error);
-                alert("Falha ao salvar o produto. Verifique a URL da API e a conexão. Detalhe: " + error.message);
+            } else {
+                alert(res.message || "Erro ao salvar produto");
             }
         }
 
-        async function deletarProduto(id) {
-            if (!confirm("Tem certeza que deseja excluir esse item?")) return;
-
-            try {
-                const resposta = await fetch(API_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "text/plain" },
-                    body: JSON.stringify({ token: TOKEN, sheet: "Produtos", action: "delete", id: id })
-                });
-
-                const resultado = await resposta.json();
-
-                if (resultado.status !== "success") {
-                    alert("Não foi possível excluir: " + (resultado.message || resultado.status));
-                    return;
-                }
-
+        async function excluirProduto(id) {
+            if (!confirm("Deseja realmente excluir este produto?")) return;
+            const resp = await fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify({ token: tokenAdmin, action: "excluir_produto", id: id })
+            });
+            const res = await resp.json();
+            if (res.status === "success") {
                 carregarProdutos();
-            } catch (error) {
-                console.error("Erro ao excluir produto:", error);
-                alert("Falha ao excluir o produto. Detalhe: " + error.message);
+            } else {
+                alert(res.message || "Erro ao excluir");
             }
         }
 
-        // ============ PERSONALIZAÇÃO ============
-        let diasSelecionados = new Set();
+        // --- PEDIDOS ---
+        async function carregarPedidos() {
+            try {
+                const resp = await fetch(API_URL + "?sheet=Pedidos");
+                const data = await resp.json();
+                const container = document.getElementById("listaPedidosContainer");
+                container.innerHTML = "";
 
-        function montarBotoesDias() {
-            const container = document.getElementById("cfgDias");
-            container.innerHTML = "";
-            DIAS_SEMANA.forEach(dia => {
-                const btn = document.createElement("button");
-                btn.type = "button";
-                btn.innerText = dia;
-                btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold border transition cursor-pointer " +
-                    (diasSelecionados.has(dia) ? "bg-amber-500 text-white border-amber-500" : "bg-gray-50 text-gray-600 border-gray-300 hover:bg-gray-100");
-                btn.onclick = () => {
-                    if (diasSelecionados.has(dia)) diasSelecionados.delete(dia);
-                    else diasSelecionados.add(dia);
-                    montarBotoesDias();
-                };
-                container.appendChild(btn);
-            });
-        }
-
-        function sincronizarCorTexto(idCor, idTexto) {
-            document.getElementById(idCor).addEventListener("input", (e) => {
-                document.getElementById(idTexto).value = e.target.value;
-            });
-            document.getElementById(idTexto).addEventListener("input", (e) => {
-                if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) {
-                    document.getElementById(idCor).value = e.target.value;
+                if (Array.isArray(data) && data.length > 1) {
+                    for (let i = data.length - 1; i >= 1; i--) {
+                        let r = data[i];
+                        container.innerHTML += `
+                            <div class="bg-white rounded-xl shadow p-5 border-l-4 border-amber-500">
+                                <div class="flex justify-between items-start mb-3">
+                                    <div>
+                                        <h4 class="font-bold text-slate-800">${r[0]}</h4>
+                                        <p class="text-xs text-gray-500">${r[1]}</p>
+                                    </div>
+                                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">${r[8]}</span>
+                                </div>
+                                <div class="text-sm space-y-1 mb-4 text-gray-600">
+                                    <p><strong>Cliente:</strong> ${r[2]} (${r[3]})</p>
+                                    <p><strong>Endereço:</strong> ${r[4]}</p>
+                                    <p><strong>Total:</strong> R$ ${Number(r[6]).toFixed(2)} (${r[7]})</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="atualizarStatusPedido('${r[0]}', 'Em Preparo')" class="flex-1 bg-blue-50 text-blue-600 hover:bg-blue-100 py-1.5 rounded text-xs font-semibold">Em Preparo</button>
+                                    <button onclick="atualizarStatusPedido('${r[0]}', 'Concluído')" class="flex-1 bg-green-50 text-green-600 hover:bg-green-100 py-1.5 rounded text-xs font-semibold">Concluir</button>
+                                </div>
+                            </div>
+                        `;
+                    }
                 }
-            });
+            } catch (e) {
+                console.error("Erro ao carregar pedidos:", e);
+            }
         }
 
+        async function atualizarStatusPedido(pedidoId, novoStatus) {
+            const resp = await fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify({ token: tokenAdmin, action: "atualizar_status_pedido", pedidoId: pedidoId, novoStatus: novoStatus })
+            });
+            const res = await resp.json();
+            if (res.status === "success") {
+                carregarPedidos();
+            }
+        }
+
+        // --- CONFIGURAÇÕES ---
         async function carregarConfig() {
             try {
-                const resp = await fetch(`${API_URL}?sheet=Config&_t=${Date.now()}`);
-                const linhas = await resp.json();
-                const config = {};
-                if (Array.isArray(linhas)) {
-                    linhas.forEach(l => { config[l.chave] = l.valor; });
+                const resp = await fetch(API_URL + "?sheet=Config");
+                const data = await resp.json();
+                configCache = data;
+                const container = document.getElementById("configFormContainer");
+                container.innerHTML = "";
+
+                if (Array.isArray(data)) {
+                    data.forEach((row, i) => {
+                        if (i === 0) return; // Ignora cabeçalho
+                        container.innerHTML += `
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">${row[0]}</label>
+                                <input type="text" data-chave="${row[0]}" value="${row[1]}" class="w-full px-3 py-2 border rounded-lg outline-none config-input">
+                            </div>
+                        `;
+                    });
                 }
-
-                document.getElementById("cfgNome").value = config.nome_loja || "Açaí Gourmet";
-                document.getElementById("cfgSlogan").value = config.slogan || "Pizzaria e Hamburgueria";
-                document.getElementById("cfgLogo").value = config.logo_url || "";
-                document.getElementById("cfgBanner").value = config.banner_url || "";
-
-                if (config.logo_url) {
-                    const previewLogo = document.getElementById("previewLogo");
-                    previewLogo.src = config.logo_url;
-                    previewLogo.classList.remove("hidden");
-                }
-                if (config.banner_url) {
-                    const previewBanner = document.getElementById("previewBanner");
-                    previewBanner.src = config.banner_url;
-                    previewBanner.classList.remove("hidden");
-                }
-                document.getElementById("cfgHorarioAbertura").value = config.horario_abertura || "18:00";
-                document.getElementById("cfgHorarioFechamento").value = config.horario_fechamento || "23:00";
-
-                diasSelecionados = new Set((config.dias_funcionamento || "Seg,Ter,Qua,Qui,Sex,Sáb").split(",").map(d => d.trim()).filter(Boolean));
-                montarBotoesDias();
-
-                const corPrimaria = config.cor_primaria || "#0f172a";
-                const corBotao = config.cor_botao || "#f59e0b";
-                const corDestaque = config.cor_destaque || "#f59e0b";
-                document.getElementById("cfgCorPrimaria").value = corPrimaria;
-                document.getElementById("cfgCorPrimariaTxt").value = corPrimaria;
-                document.getElementById("cfgCorBotao").value = corBotao;
-                document.getElementById("cfgCorBotaoTxt").value = corBotao;
-                document.getElementById("cfgCorDestaque").value = corDestaque;
-                document.getElementById("cfgCorDestaqueTxt").value = corDestaque;
-
-                document.getElementById("cfgFonte").value = config.fonte || "Poppins";
-                document.getElementById("cfgTamanhoFonte").value = config.tamanho_fonte || 16;
-                document.getElementById("cfgTamanhoFonteValor").innerText = config.tamanho_fonte || 16;
-
-                document.getElementById("cfgExibirLogo").checked = config.exibir_logo !== "false";
-                document.getElementById("cfgExibirSlogan").checked = config.exibir_slogan !== "false";
-                document.getElementById("cfgExibirBanner").checked = config.exibir_banner !== "false";
-                document.getElementById("cfgExibirHorario").checked = config.exibir_horario !== "false";
-                document.getElementById("cfgExibirDias").checked = config.exibir_dias !== "false";
-                document.getElementById("cfgFechadoManual").checked = config.fechado_manualmente === "true";
             } catch (e) {
-                console.error("Erro ao carregar configurações:", e);
-                diasSelecionados = new Set(["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]);
-                montarBotoesDias();
+                console.error("Erro ao carregar config:", e);
             }
         }
 
-        async function salvarConfig() {
-            const config = {
-                nome_loja: document.getElementById("cfgNome").value,
-                slogan: document.getElementById("cfgSlogan").value,
-                logo_url: document.getElementById("cfgLogo").value,
-                banner_url: document.getElementById("cfgBanner").value,
-                horario_abertura: document.getElementById("cfgHorarioAbertura").value,
-                horario_fechamento: document.getElementById("cfgHorarioFechamento").value,
-                dias_funcionamento: Array.from(diasSelecionados).join(","),
-                cor_primaria: document.getElementById("cfgCorPrimariaTxt").value,
-                cor_botao: document.getElementById("cfgCorBotaoTxt").value,
-                cor_destaque: document.getElementById("cfgCorDestaqueTxt").value,
-                fonte: document.getElementById("cfgFonte").value,
-                tamanho_fonte: document.getElementById("cfgTamanhoFonte").value,
-                exibir_logo: document.getElementById("cfgExibirLogo").checked ? "true" : "false",
-                exibir_slogan: document.getElementById("cfgExibirSlogan").checked ? "true" : "false",
-                exibir_banner: document.getElementById("cfgExibirBanner").checked ? "true" : "false",
-                exibir_horario: document.getElementById("cfgExibirHorario").checked ? "true" : "false",
-                exibir_dias: document.getElementById("cfgExibirDias").checked ? "true" : "false",
-                fechado_manualmente: document.getElementById("cfgFechadoManual").checked ? "true" : "false"
-            };
+        async function salvarConfiguracoes() {
+            const inputs = document.querySelectorAll(".config-input");
+            const novasConfig = [];
+            inputs.forEach(inp => {
+                novasConfig.push({ chave: inp.getAttribute("data-chave"), valor: inp.value });
+            });
 
-            const msgOk = document.getElementById("msgConfigOk");
-            const msgErro = document.getElementById("msgConfigErro");
-            msgOk.classList.add("hidden");
-            msgErro.classList.add("hidden");
+            const resp = await fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify({ token: tokenAdmin, action: "salvar_config", config: novasConfig })
+            });
+            const res = await resp.json();
+            if (res.status === "success") {
+                alert("Configurações salvas com sucesso!");
+            } else {
+                alert("Erro ao salvar configurações.");
+            }
+        }
 
+        // --- ADMINS ---
+        async function carregarAdmins() {
             try {
-                const resposta = await fetch(API_URL, {
+                const resp = await fetch(API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "text/plain" },
-                    body: JSON.stringify({ token: TOKEN, action: "save_config", config })
+                    body: JSON.stringify({ token: tokenAdmin, action: "listar_admins" })
                 });
+                const admins = await resp.json();
+                const corpo = document.getElementById("tabelaAdminsCorpo");
+                corpo.innerHTML = "";
 
-                const resultado = await resposta.json();
-
-                if (resultado.status === "unauthorized") {
-                    msgErro.innerText = "Token inválido. Verifique se o TOKEN no admin.html é igual ao do Apps Script.";
-                    msgErro.classList.remove("hidden");
-                    return;
+                if (Array.isArray(admins)) {
+                    admins.forEach(a => {
+                        corpo.innerHTML += `
+                            <tr class="border-b hover:bg-gray-50 text-sm">
+                                <td class="p-4 font-medium text-slate-800">${a.nome}</td>
+                                <td class="p-4 text-gray-600">${a.email}</td>
+                                <td class="p-4"><span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">${a.permissao}</span></td>
+                                <td class="p-4"><span class="px-2.5 py-1 rounded-full text-xs font-semibold ${a.primeiroAcesso === 'SIM' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}">${a.primeiroAcesso === 'SIM' ? 'Pendente' : 'Ativo'}</span></td>
+                                <td class="p-4 text-center">
+                                    <button onclick="removerAdmin('${a.email}')" class="text-red-600 hover:underline"><i class="fa-solid fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        `;
+                    });
                 }
-
-                if (resultado.status !== "success") {
-                    msgErro.innerText = "O servidor recusou a operação: " + (resultado.message || JSON.stringify(resultado));
-                    msgErro.classList.remove("hidden");
-                    return;
-                }
-
-                msgOk.innerText = "Configurações salvas com sucesso! As alterações já aparecem no cardápio dos clientes.";
-                msgOk.classList.remove("hidden");
-                setTimeout(() => msgOk.classList.add("hidden"), 4000);
-            } catch (error) {
-                console.error("Erro ao salvar configurações:", error);
-                msgErro.innerText = "Falha ao salvar. Verifique a URL da API e a conexão. Detalhe: " + error.message;
-                msgErro.classList.remove("hidden");
-            }
-        }
-
-        document.getElementById("cfgTamanhoFonte").addEventListener("input", (e) => {
-            document.getElementById("cfgTamanhoFonteValor").innerText = e.target.value;
-        });
-
-        sincronizarCorTexto("cfgCorPrimaria", "cfgCorPrimariaTxt");
-        sincronizarCorTexto("cfgCorBotao", "cfgCorBotaoTxt");
-        sincronizarCorTexto("cfgCorDestaque", "cfgCorDestaqueTxt");
-
-        // ============ CLIENTES (montado a partir do histórico de Pedidos) ============
-        let clientesGlobais = [];
-
-        function extrairWhatsapp(clienteTexto) {
-            const m = (clienteTexto || "").toString().match(/\(([^)]+)\)/);
-            return m ? m[1].trim() : "Não informado";
-        }
-
-        function extrairNome(clienteTexto) {
-            return (clienteTexto || "").toString().replace(/\s*\([^)]*\)\s*/, "").trim() || "Cliente";
-        }
-
-        async function carregarClientes() {
-            try {
-                const resp = await fetch(`${API_URL}?sheet=Pedidos&_t=${Date.now()}`);
-                const pedidos = await resp.json();
-
-                if (!Array.isArray(pedidos)) {
-                    clientesGlobais = [];
-                    renderizarClientes();
-                    return;
-                }
-
-                const mapa = {};
-                pedidos.forEach(p => {
-                    const whats = extrairWhatsapp(p.cliente);
-                    const nome = extrairNome(p.cliente);
-                    const endereco = p["endereço"] || p.endereco || "";
-                    const chave = whats !== "Não informado" ? whats : (nome + "|" + endereco);
-
-                    if (!mapa[chave]) {
-                        mapa[chave] = { nome, whatsapp: whats, endereco, pedidos: 0, totalGasto: 0 };
-                    }
-
-                    mapa[chave].pedidos += 1;
-                    mapa[chave].totalGasto += parseFloat(p.total) || 0;
-                    if (endereco) mapa[chave].endereco = endereco;
-                });
-
-                clientesGlobais = Object.values(mapa);
-                renderizarClientes();
             } catch (e) {
-                console.error("Erro ao carregar clientes:", e);
+                console.error("Erro ao carregar admins:", e);
             }
         }
 
-        function renderizarClientes() {
-            const busca = (document.getElementById("buscaCliente").value || "").toLowerCase();
-            const ordenar = document.getElementById("ordenarClientes").value;
+        function abrirModalNovoAdmin() {
+            document.getElementById("modalAdmin").classList.remove("hidden");
+            document.getElementById("novoAdminNome").value = "";
+            document.getElementById("novoAdminEmail").value = "";
+        }
 
-            let lista = clientesGlobais.filter(c =>
-                c.nome.toLowerCase().includes(busca) ||
-                c.whatsapp.toLowerCase().includes(busca) ||
-                c.endereco.toLowerCase().includes(busca)
-            );
+        function fecharModalNovoAdmin() {
+            document.getElementById("modalAdmin").classList.add("hidden");
+        }
 
-            lista.sort((a, b) => ordenar === "gasto" ? b.totalGasto - a.totalGasto : b.pedidos - a.pedidos);
+        async function enviarCadastroAdmin() {
+            const nome = document.getElementById("novoAdminNome").value.trim();
+            const email = document.getElementById("novoAdminEmail").value.trim();
+            const permissao = document.getElementById("novoAdminPermissao").value;
 
-            const tabela = document.getElementById("tabela-clientes");
-            const msgVazio = document.getElementById("msgClientesVazio");
-
-            if (lista.length === 0) {
-                tabela.innerHTML = "";
-                msgVazio.classList.remove("hidden");
+            if (!nome || !email) {
+                alert("Preencha todos os campos.");
                 return;
             }
-            msgVazio.classList.add("hidden");
 
-            tabela.innerHTML = lista.map(c => `
-                <tr class="hover:bg-gray-50 border-b border-gray-100 transition">
-                    <td class="p-4 font-medium text-gray-900">${c.nome}</td>
-                    <td class="p-4">${c.whatsapp}</td>
-                    <td class="p-4 text-xs text-gray-500 max-w-xs truncate">${c.endereco || "-"}</td>
-                    <td class="p-4"><span class="bg-amber-50 text-amber-700 px-2 py-0.5 rounded text-xs font-semibold">${c.pedidos}</span></td>
-                    <td class="p-4 font-semibold text-gray-900">R$ ${c.totalGasto.toFixed(2)}</td>
-                </tr>
-            `).join("");
-        }
-
-        // ============ RELATÓRIOS (montado a partir do histórico de Pedidos) ============
-        async function carregarRelatorios() {
-            try {
-                const resp = await fetch(`${API_URL}?sheet=Pedidos&_t=${Date.now()}`);
-                let pedidos = await resp.json();
-                if (!Array.isArray(pedidos)) pedidos = [];
-
-                const totalPedidos = pedidos.length;
-                const faturamento = pedidos.reduce((soma, p) => soma + (parseFloat(p.total) || 0), 0);
-                const ticketMedio = totalPedidos > 0 ? faturamento / totalPedidos : 0;
-                const clientesUnicos = new Set(pedidos.map(p => extrairWhatsapp(p.cliente))).size;
-
-                document.getElementById("metricaPedidos").innerText = totalPedidos;
-                document.getElementById("metricaFaturamento").innerText = "R$ " + faturamento.toFixed(2);
-                document.getElementById("metricaTicket").innerText = "R$ " + ticketMedio.toFixed(2);
-                document.getElementById("metricaClientes").innerText = clientesUnicos;
-
-                const contagemProdutos = {};
-                pedidos.forEach(p => {
-                    (p.itens || "").toString().split(",").forEach(item => {
-                        const m = item.trim().match(/^(\d+)x\s+(.+)$/i);
-                        if (m) {
-                            const nome = m[2].trim();
-                            contagemProdutos[nome] = (contagemProdutos[nome] || 0) + parseInt(m[1]);
-                        }
-                    });
-                });
-                const rankingProdutos = Object.entries(contagemProdutos).sort((a, b) => b[1] - a[1]).slice(0, 8);
-                document.getElementById("rankingProdutos").innerHTML = rankingProdutos.length === 0
-                    ? '<p class="text-gray-400 text-sm">Sem dados ainda.</p>'
-                    : rankingProdutos.map(([nome, qtd], i) => `
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-700">${i + 1}. ${nome}</span>
-                            <span class="font-semibold text-amber-600">${qtd}x</span>
-                        </div>
-                    `).join("");
-
-                const contagemPagamento = {};
-                pedidos.forEach(p => {
-                    const forma = p["forma pagamento"] || "Não informado";
-                    contagemPagamento[forma] = (contagemPagamento[forma] || 0) + 1;
-                });
-                const rankingPagamento = Object.entries(contagemPagamento).sort((a, b) => b[1] - a[1]);
-                document.getElementById("rankingPagamento").innerHTML = rankingPagamento.length === 0
-                    ? '<p class="text-gray-400 text-sm">Sem dados ainda.</p>'
-                    : rankingPagamento.map(([forma, qtd]) => `
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-700">${forma}</span>
-                            <span class="font-semibold text-amber-600">${qtd}</span>
-                        </div>
-                    `).join("");
-            } catch (e) {
-                console.error("Erro ao carregar relatórios:", e);
+            const resp = await fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify({ token: tokenAdmin, action: "cadastrar_admin", nome: nome, email: email, permissao: permissao })
+            });
+            const res = await resp.json();
+            if (res.status === "success") {
+                alert(res.message);
+                fecharModalNovoAdmin();
+                carregarAdmins();
+            } else {
+                alert(res.message || "Erro ao cadastrar admin.");
             }
         }
 
-        // ============ BACKUP ============
+        async function removerAdmin(email) {
+            if (!confirm(`Deseja remover o acesso de ${email}?`)) return;
+            const resp = await fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify({ token: tokenAdmin, action: "remover_admin", email: email })
+            });
+            const res = await resp.json();
+            if (res.status === "success") {
+                carregarAdmins();
+            } else {
+                alert(res.message || "Erro ao remover.");
+            }
+        }
+
+        // --- BACKUP ---
         async function baixarBackup() {
-            const status = document.getElementById("statusBackup");
-            status.className = "text-xs mt-2 text-gray-500";
-            status.innerText = "Gerando backup...";
-
-            try {
-                const [produtosResp, configResp, pedidosResp] = await Promise.all([
-                    fetch(`${API_URL}?sheet=Produtos&_t=${Date.now()}`),
-                    fetch(`${API_URL}?sheet=Config&_t=${Date.now()}`),
-                    fetch(`${API_URL}?sheet=Pedidos&_t=${Date.now()}`)
-                ]);
-
-                const backup = {
-                    geradoEm: new Date().toISOString(),
-                    produtos: await produtosResp.json(),
-                    config: await configResp.json(),
-                    pedidos: await pedidosResp.json()
-                };
-
-                const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = `backup_cardapio_${new Date().toISOString().slice(0, 10)}.json`;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                URL.revokeObjectURL(url);
-
-                status.className = "text-xs mt-2 text-green-600";
-                status.innerText = "Backup baixado com sucesso!";
-            } catch (e) {
-                console.error("Erro ao gerar backup:", e);
-                status.className = "text-xs mt-2 text-red-600";
-                status.innerText = "Falha ao gerar backup: " + e.message;
+            const respProd = await fetch(API_URL + "?sheet=Produtos");
+            const prodData = await respProd.json();
+            const produtos = [];
+            if (Array.isArray(prodData)) {
+                for (let i = 1; i < prodData.length; i++) {
+                    let r = prodData[i];
+                    produtos.push({ id: r[0], nome: r[1], descricao: r[2], preco: r[3], categoria: r[4], imagem: r[5], disponivel: r[6], adicionais: r[7] });
+                }
             }
+
+            const respConf = await fetch(API_URL + "?sheet=Config");
+            const confData = await respConf.json();
+            const config = [];
+            if (Array.isArray(confData)) {
+                for (let i = 1; i < confData.length; i++) {
+                    config.push({ chave: confData[i][0], valor: confData[i][1] });
+                }
+            }
+
+            const backupObj = { produtos: produtos, config: config, data: new Date().toISOString() };
+            const blob = new Blob([JSON.stringify(backupObj, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `backup-cardapio-${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
         }
 
         async function restaurarBackup(event) {
-            const arquivo = event.target.files[0];
-            if (!arquivo) return;
+            const file = event.target.files[0];
+            if (!file) return;
 
-            const status = document.getElementById("statusRestaurar");
-
-            if (!confirm("Isso vai SUBSTITUIR os produtos e as configurações atuais pelos dados do arquivo. O histórico de pedidos não será alterado. Deseja continuar?")) {
-                event.target.value = "";
-                return;
-            }
-
-            status.className = "text-xs mt-2 text-gray-500";
-            status.innerText = "Restaurando backup...";
-
-            try {
-                const texto = await arquivo.text();
-                const backup = JSON.parse(texto);
-
-                if (!backup.produtos || !Array.isArray(backup.produtos)) {
-                    throw new Error("Arquivo de backup inválido ou corrompido.");
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const backup = JSON.parse(e.target.result);
+                    const resp = await fetch(API_URL, {
+                        method: "POST",
+                        headers: { "Content-Type": "text/plain" },
+                        body: JSON.stringify({ token: tokenAdmin, action: "restaurar_backup", produtos: backup.produtos, config: backup.config })
+                    });
+                    const res = await resp.json();
+                    if (res.status === "success") {
+                        alert("Backup restaurado com sucesso!");
+                        carregarProdutos();
+                        carregarConfig();
+                    } else {
+                        alert("Erro ao restaurar: " + res.message);
+                    }
+                } catch (err) {
+                    alert("Arquivo de backup inválido.");
                 }
-
-                const resposta = await fetch(API_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "text/plain" },
-                    body: JSON.stringify({
-                        token: TOKEN,
-                        action: "restaurar_backup",
-                        produtos: backup.produtos,
-                        config: backup.config || []
-                    })
-                });
-
-                const resultado = await resposta.json();
-                if (resultado.status !== "success") {
-                    throw new Error(resultado.message || "O servidor recusou a restauração.");
-                }
-
-                status.className = "text-xs mt-2 text-green-600";
-                status.innerText = "Backup restaurado com sucesso!";
-                carregarProdutos();
-                carregarConfig();
-            } catch (e) {
-                console.error("Erro ao restaurar backup:", e);
-                status.className = "text-xs mt-2 text-red-600";
-                status.innerText = "Falha ao restaurar: " + e.message;
-            } finally {
-                event.target.value = "";
-            }
+            };
+            reader.readAsText(file);
         }
-
-        window.onload = function () {
-            carregarProdutos();
-            carregarConfig();
-        };
     </script>
 </body>
 </html>
