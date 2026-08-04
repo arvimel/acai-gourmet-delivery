@@ -289,7 +289,7 @@
             if (config.loja_aberta_manual === "true") {
                 return { aberto: true };
             }
-            if (config.loja_fechada_manual === "true") {
+            if (config.loja_fechada_manual === "true" || config.fechado_manualmente === "true") {
                 return { aberto: false };
             }
 
@@ -313,14 +313,12 @@
             if (minutosAbertura <= minutosFechamento) {
                 dentroDoHorario = minutosAgora >= minutosAbertura && minutosAgora < minutosFechamento;
             } else {
-                // horário atravessa a meia-noite (ex: abre 18:00, fecha 02:00)
                 dentroDoHorario = minutosAgora >= minutosAbertura || minutosAgora < minutosFechamento;
             }
 
             return { aberto: diaFunciona && dentroDoHorario };
         }
 
-        // Atualiza o selo "Aberto/Fechado" no topo do cardápio de acordo com o horário atual.
         function atualizarBadgeStatus() {
             const status = calcularStatusLoja(configAtual);
             lojaAberta = status.aberto;
@@ -338,7 +336,6 @@
 
         function aplicarConfig(config) {
             configAtual = config || {};
-            // Textos do cabeçalho
             document.getElementById("nomeLoja").innerText = config.nome_loja || "Cardápio Digital";
             document.title = (config.nome_loja || "Cardápio Digital") + " - Cardápio";
 
@@ -350,7 +347,6 @@
                 slogan.classList.add("hidden");
             }
 
-            // Controle estrito da Logo da Loja (Esconde se for limpa no admin)
             const logo = document.getElementById("logoLoja");
             if (config.exibir_logo !== "false" && config.logo_url && config.logo_url.trim() !== "") {
                 logo.src = config.logo_url;
@@ -362,7 +358,6 @@
                 logo.src = "";
             }
 
-            // Controle estrito do Banner (Esconde se for limpo no admin)
             const banner = document.getElementById("bannerDestaque");
             if (config.exibir_banner !== "false" && config.banner_url && config.banner_url.trim() !== "") {
                 banner.style.backgroundImage = `url('${config.banner_url}')`;
@@ -386,7 +381,6 @@
                 document.getElementById("badgeDias").style.display = "none";
             }
 
-            // Botão do Instagram (usa o link salvo no admin, ou o padrão da loja)
             const linkInstagram = document.getElementById("linkInstagram");
             const urlInstagram = (config.instagram_url && config.instagram_url.trim() !== "")
                 ? config.instagram_url.trim()
@@ -395,7 +389,6 @@
             linkInstagram.classList.remove("hidden");
             linkInstagram.classList.add("inline-flex");
 
-            // Cores do tema (Garante o retorno correto para o padrão de fábrica)
             const raiz = document.documentElement.style;
             const prim = config.cor_primaria || "#0f172a";
             const bot = config.cor_botao || "#f59e0b";
@@ -406,7 +399,6 @@
             raiz.setProperty("--cor-botao-hover", bot);
             raiz.setProperty("--cor-destaque", dest);
 
-            // Fonte e tamanho
             if (config.fonte && FONTES_DISPONIVEIS[config.fonte]) {
                 document.getElementById("fonteGoogle").href = `https://fonts.googleapis.com/css2?family=${FONTES_DISPONIVEIS[config.fonte]}&display=swap`;
                 raiz.setProperty("--fonte", `'${config.fonte}', sans-serif`);
@@ -421,25 +413,12 @@
         async function carregarConfig() {
             try {
                 const resp = await fetch(`${API_URL}?sheet=Config&_t=${Date.now()}`);
-                if (!resp.ok) {
-                    console.warn("Config: servidor respondeu com status", resp.status);
-                    return;
-                }
+                if (!resp.ok) { console.warn("Config: servidor respondeu com status", resp.status); return; }
                 const linhas = await resp.json();
-                console.log("Config recebida do Apps Script:", linhas);
-
-                if (!Array.isArray(linhas)) {
-                    console.warn("Config: resposta não é uma lista. Resposta:", linhas);
-                    return;
-                }
-                if (linhas.length === 0) {
-                    console.warn("Config: a aba 'Config' existe mas está vazia. Salve as configurações no painel admin.");
-                    return;
-                }
-
+                if (!Array.isArray(linhas)) { console.warn("Config: resposta não é uma lista.", linhas); return; }
+                if (linhas.length === 0) { console.warn("Config: aba 'Config' vazia."); return; }
                 const config = {};
                 linhas.forEach(l => { config[l.chave] = l.valor; });
-                console.log("Config aplicada:", config);
                 aplicarConfig(config);
             } catch (e) {
                 console.warn("Não foi possível carregar configurações personalizadas, usando padrão.", e);
@@ -450,19 +429,11 @@
             const container = document.getElementById("cardapio-container");
             try {
                 const response = await fetch(`${API_URL}?sheet=Produtos&_t=${Date.now()}`);
-
-                if (!response.ok) {
-                    throw new Error(`Servidor respondeu com status ${response.status}`);
-                }
-
+                if (!response.ok) throw new Error(`Servidor respondeu com status ${response.status}`);
                 produtosGlobais = await response.json();
-
-                if (produtosGlobais.error) {
-                    throw new Error(produtosGlobais.error);
-                }
+                if (produtosGlobais.error) throw new Error(produtosGlobais.error);
 
                 container.innerHTML = "";
-
                 const disponiveis = produtosGlobais.filter(p => p.status === "Disponível");
                 const categorias = [...new Set(disponiveis.map(p => p.categoria))];
 
@@ -473,12 +444,10 @@
 
                 categorias.forEach(cat => {
                     let htmlCat = `<div class="space-y-3"><h2 class="text-sm font-bold cor-primaria-text border-l-4 cor-botao-bg pl-2 uppercase tracking-wide">${cat}</h2><div class="space-y-3">`;
-
                     const itensCat = disponiveis.filter(p => p.categoria === cat);
                     itensCat.forEach(p => {
                         const fotoValida = (p.foto && String(p.foto).trim() !== "") ? String(p.foto).trim() : 'https://placehold.co/80x80?text=Sem+Foto';
                         const descricaoCurta = (p.descricao || '').toString();
-
                         htmlCat += `
                             <div class="card-produto bg-white p-3 rounded-2xl shadow-sm hover:shadow-md border border-gray-100 flex gap-3 items-center cursor-pointer" onclick='abrirDetalhe(${JSON.stringify(p)})'>
                                 <img src="${fotoValida}" class="w-20 h-20 object-cover rounded-xl border border-gray-100 flex-shrink-0" onerror="this.onerror=null;this.src='https://placehold.co/80x80?text=Sem+Foto'">
@@ -507,22 +476,18 @@
             }
         }
 
-        // Remove acentos para comparar categorias sem depender de maiúsculas/cedilha
         function normalizarTexto(s) {
             return (s || "").toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         }
 
-        // Mostra em um modal os itens da categoria "Promoção" assim que o cliente abre o cardápio.
         function exibirPromocoesSeExistirem() {
             const promocoes = produtosGlobais.filter(p =>
                 p.status === "Disponível" && normalizarTexto(p.categoria) === "promocao"
             );
-
             if (promocoes.length === 0) return;
 
             const lista = document.getElementById("listaPromocoes");
             lista.innerHTML = "";
-
             promocoes.forEach(p => {
                 const fotoValida = (p.foto && String(p.foto).trim() !== "") ? String(p.foto).trim() : 'https://placehold.co/80x80?text=Sem+Foto';
                 lista.innerHTML += `
@@ -536,25 +501,20 @@
                     </div>
                 `;
             });
-
             document.getElementById("modalPromocao").classList.remove("hidden");
         }
 
-        function fecharModalPromocao() {
-            document.getElementById("modalPromocao").classList.add("hidden");
-        }
+        function fecharModalPromocao() { document.getElementById("modalPromocao").classList.add("hidden"); }
 
         function abrirDetalhe(p) {
             produtoDetalheAtual = p;
             const fotoValida = (p.foto && String(p.foto).trim() !== "") ? String(p.foto).trim() : 'https://placehold.co/400x300?text=Sem+Foto';
-
             document.getElementById("detalheFoto").src = fotoValida;
             document.getElementById("detalheCategoria").innerText = p.categoria || "";
             document.getElementById("detalheNome").innerText = p.nome;
             document.getElementById("detalheDescricao").innerText = p.descricao || "Sem descrição disponível.";
             document.getElementById("detalhePreco").innerText = `R$ ${parseFloat(p.preco).toFixed(2)}`;
             document.getElementById("detalheQtd").innerText = carrinho[p.id] || 0;
-
             document.getElementById("modalDetalhe").classList.remove("hidden");
         }
 
@@ -573,10 +533,8 @@
             if (!carrinho[id]) carrinho[id] = 0;
             carrinho[id] += mudanca;
             if (carrinho[id] <= 0) delete carrinho[id];
-
             const spanQtd = document.getElementById(`qtd-${id}`);
             if (spanQtd) spanQtd.innerText = carrinho[id] || 0;
-
             atualizarBarraCarrinho();
             atualizarBadgeCarrinho();
         }
@@ -590,9 +548,7 @@
             return total;
         }
 
-        function contarItens() {
-            return Object.values(carrinho).reduce((a, b) => a + b, 0);
-        }
+        function contarItens() { return Object.values(carrinho).reduce((a, b) => a + b, 0); }
 
         function atualizarBarraCarrinho() {
             const total = calcularTotal();
@@ -621,32 +577,17 @@
         }
 
         function irParaCarrinho() {
-            if (contarItens() > 0) {
-                abrirCheckout();
-            } else {
-                document.getElementById("cardapio-container").scrollIntoView({ behavior: "smooth" });
-            }
+            if (contarItens() > 0) { abrirCheckout(); }
+            else { document.getElementById("cardapio-container").scrollIntoView({ behavior: "smooth" }); }
         }
 
-        // Compartilha o link do cardápio. Em celular, abre o menu nativo de
-        // compartilhamento (WhatsApp, Instagram, etc.); no computador, copia o link.
         async function compartilharCardapio() {
             const nomeLoja = document.getElementById("nomeLoja").innerText || "Cardápio Digital";
-            const dadosCompartilhamento = {
-                title: nomeLoja,
-                text: `Confira o cardápio de ${nomeLoja}!`,
-                url: window.location.href
-            };
-
+            const dadosCompartilhamento = { title: nomeLoja, text: `Confira o cardápio de ${nomeLoja}!`, url: window.location.href };
             if (navigator.share) {
-                try {
-                    await navigator.share(dadosCompartilhamento);
-                } catch (erro) {
-                    // usuário cancelou o compartilhamento, não faz nada
-                }
+                try { await navigator.share(dadosCompartilhamento); } catch (erro) { }
                 return;
             }
-
             try {
                 await navigator.clipboard.writeText(window.location.href);
                 alert("Link do cardápio copiado! Agora é só colar onde quiser compartilhar.");
@@ -667,9 +608,7 @@
         function capturarLocalizacao() {
             const btn = document.getElementById("btnGps");
             const txt = document.getElementById("txtGps");
-
             if (!navigator.geolocation) { alert("GPS não suportado pelo seu navegador."); return; }
-
             txt.innerText = "Localizando...";
             navigator.geolocation.getCurrentPosition((pos) => {
                 const lat = pos.coords.latitude;
@@ -684,15 +623,10 @@
             });
         }
 
-        // ==========================================================
-        // FLUXO DE PAGAMENTO (PIX / Cartão via Mercado Pago)
-        // ==========================================================
-
-        let pedidoAtual = null; // guarda os dados do pedido em andamento
+        let pedidoAtual = null;
 
         async function enviarPedido(e) {
             e.preventDefault();
-
             if (!lojaAberta) {
                 alert("Estamos fechados no momento. Volte durante nosso horário de funcionamento para finalizar o pedido.");
                 fecharCheckout();
@@ -705,10 +639,7 @@
                 if (prod) itensArray.push(`${carrinho[id]}x ${prod.nome}`);
             });
 
-            if (itensArray.length === 0) {
-                alert("Seu carrinho está vazio.");
-                return;
-            }
+            if (itensArray.length === 0) { alert("Seu carrinho está vazio."); return; }
 
             const formaPagamento = document.querySelector('input[name="pagamento"]:checked').value;
             const whats = document.getElementById("cliWhats").value;
@@ -731,26 +662,18 @@
             btn.innerText = "Enviando...";
 
             try {
-                // 1) grava o pedido na planilha (status Pendente)
                 const resposta = await fetch(API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "text/plain" },
                     body: JSON.stringify({ action: "novo_pedido", status: "Pendente", ...pedidoAtual })
                 });
                 const resultado = await resposta.json();
-
                 if (resultado.status !== "success") {
                     alert("O servidor recusou o pedido: " + (resultado.message || resultado.status));
                     return;
                 }
-
-                // 2) fecha o checkout e abre a tela de pagamento correta
                 fecharCheckout();
-                if (formaPagamento === "Pix") {
-                    iniciarPagamentoPix();
-                } else {
-                    iniciarPagamentoCartao();
-                }
+                if (formaPagamento === "Pix") { iniciarPagamentoPix(); } else { iniciarPagamentoCartao(); }
             } catch (error) {
                 console.error("Erro na requisição:", error);
                 alert("Falha ao salvar o pedido. Verifique a conexão e a URL da API.");
@@ -760,9 +683,7 @@
             }
         }
 
-        function abrirModalPagamento() {
-            document.getElementById("modalPagamento").classList.remove("hidden");
-        }
+        function abrirModalPagamento() { document.getElementById("modalPagamento").classList.remove("hidden"); }
 
         function fecharModalPagamento() {
             document.getElementById("modalPagamento").classList.add("hidden");
@@ -775,9 +696,7 @@
             if (pollingPixInterval) { clearInterval(pollingPixInterval); pollingPixInterval = null; }
         }
 
-        function fecharModalPagamentoSucesso() {
-            fecharModalPagamento();
-        }
+        function fecharModalPagamentoSucesso() { fecharModalPagamento(); }
 
         function mostrarErroPagamento(msg) {
             document.getElementById("blocoPix").classList.add("hidden");
@@ -791,44 +710,29 @@
             document.getElementById("blocoCartao").classList.add("hidden");
             document.getElementById("blocoSucesso").classList.remove("hidden");
             if (pollingPixInterval) { clearInterval(pollingPixInterval); pollingPixInterval = null; }
-
             carrinho = {};
             atualizarBarraCarrinho();
             atualizarBadgeCarrinho();
             carregarCardapio();
         }
 
-        // ---------- PIX ----------
         async function iniciarPagamentoPix() {
             abrirModalPagamento();
             document.getElementById("blocoPix").classList.remove("hidden");
             document.getElementById("pixCarregando").classList.remove("hidden");
             document.getElementById("pixConteudo").classList.add("hidden");
-
             try {
                 const resp = await fetch(API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "text/plain" },
-                    body: JSON.stringify({
-                        action: "criar_pix",
-                        valor: pedidoAtual.total,
-                        pedidoId: pedidoAtual.id,
-                        email: pedidoAtual.email
-                    })
+                    body: JSON.stringify({ action: "criar_pix", valor: pedidoAtual.total, pedidoId: pedidoAtual.id, email: pedidoAtual.email })
                 });
                 const dados = await resp.json();
-
-                if (dados.status !== "success") {
-                    mostrarErroPagamento(dados.message);
-                    return;
-                }
-
+                if (dados.status !== "success") { mostrarErroPagamento(dados.message); return; }
                 document.getElementById("imgQrPix").src = "data:image/png;base64," + dados.qr_code_base64;
                 document.getElementById("copiaCola").value = dados.qr_code;
                 document.getElementById("pixCarregando").classList.add("hidden");
                 document.getElementById("pixConteudo").classList.remove("hidden");
-
-                // fica checando a cada 3s se o pagamento já caiu
                 pollingPixInterval = setInterval(() => verificarStatusPix(dados.payment_id), 3000);
             } catch (erro) {
                 console.error(erro);
@@ -844,10 +748,7 @@
                     body: JSON.stringify({ action: "consultar_status_pix", paymentId })
                 });
                 const dados = await resp.json();
-
-                if (dados.status === "approved") {
-                    finalizarPedidoComSucesso();
-                }
+                if (dados.status === "approved") { finalizarPedidoComSucesso(); }
             } catch (erro) {
                 console.warn("Erro ao consultar status do Pix:", erro);
             }
@@ -858,27 +759,21 @@
             campo.select();
             navigator.clipboard.writeText(campo.value).then(() => {
                 alert("Código Pix copiado!");
-            }).catch(() => {
-                document.execCommand("copy");
-            });
+            }).catch(() => { document.execCommand("copy"); });
         }
 
-        // ---------- CARTÃO ----------
         async function iniciarPagamentoCartao() {
             abrirModalPagamento();
             document.getElementById("blocoCartao").classList.remove("hidden");
             document.getElementById("containerCartao").innerHTML = "";
             document.getElementById("statusCartao").innerText = "";
-
             try {
                 const bricksBuilder = mp.bricks();
                 cardBrickController = await bricksBuilder.create("cardPayment", "containerCartao", {
                     initialization: { amount: Number(pedidoAtual.total) },
                     callbacks: {
                         onReady: () => {},
-                        onSubmit: (cardFormData) => {
-                            return processarPagamentoCartao(cardFormData);
-                        },
+                        onSubmit: (cardFormData) => { return processarPagamentoCartao(cardFormData); },
                         onError: (erro) => {
                             console.error(erro);
                             document.getElementById("statusCartao").innerText = "Erro ao carregar formulário do cartão.";
@@ -897,19 +792,11 @@
                 const resp = await fetch(API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "text/plain" },
-                    body: JSON.stringify({
-                        action: "pagar_cartao",
-                        pedidoId: pedidoAtual.id,
-                        ...cardFormData
-                    })
+                    body: JSON.stringify({ action: "pagar_cartao", pedidoId: pedidoAtual.id, ...cardFormData })
                 });
                 const resultado = await resp.json();
-
-                if (resultado.status === "approved") {
-                    finalizarPedidoComSucesso();
-                } else {
-                    mostrarErroPagamento(resultado.status_detail || "Pagamento recusado. Verifique os dados do cartão.");
-                }
+                if (resultado.status === "approved") { finalizarPedidoComSucesso(); }
+                else { mostrarErroPagamento(resultado.status_detail || "Pagamento recusado. Verifique os dados do cartão."); }
             } catch (erro) {
                 console.error(erro);
                 mostrarErroPagamento("Falha ao processar o pagamento. Tente novamente.");
@@ -919,8 +806,6 @@
         window.onload = async function () {
             await carregarConfig();
             await carregarCardapio();
-            // Reavalia o horário a cada minuto, para fechar/abrir automaticamente
-            // sem precisar que o cliente recarregue a página.
             setInterval(atualizarBadgeStatus, 60000);
         };
     </script>
